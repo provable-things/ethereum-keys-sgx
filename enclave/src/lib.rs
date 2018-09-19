@@ -22,9 +22,29 @@ use sgx_types::*;
  * 
  **/
 #[no_mangle]
-pub extern "C" fn generate_keypair() -> sgx_status_t {
-    match keygen::KeyPair::new() {
-        Ok(_kp) => sgx_status_t::SGX_SUCCESS, // TODO: Copy data to a pointer that's passed in of a public key mem. space!
-        Err(_)  => sgx_status_t::SGX_ERROR_UNEXPECTED
+pub extern "C" fn generate_keypair(pub_key_ptr: &mut secp256k1::PublicKey) -> sgx_status_t {
+
+    // println!("Pub key ptr before gen. key pair: {:?}", pub_key_ptr);
+    match keygen::KeyPair::new() { // TODO: Try in, out in the EDL, and try the above println! with the :? now.
+        Ok(kp) => {
+            println!("Public key from ok arm: {}", kp.public); // Hex version
+            *pub_key_ptr = kp.public
+        },
+        Err(_e) => {
+            println!("We're in the erorr arm here :(");
+            ()
+        }
     }
+    println!("Public key pointer after the match: {:?}", pub_key_ptr);
+    sgx_status_t::SGX_SUCCESS
+
+
+    // // Second, convert the vector to a slice and calculate its SHA256
+    // let result = rsgx_sha256_slice(&input_slice);
+
+    // // Third, copy back the result
+    // match result {
+    //     Ok(output_hash) => *hash = output_hash,
+    //     Err(x) => return x
+    // }
 }

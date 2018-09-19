@@ -8,7 +8,6 @@ build = "build.rs"
 dirs = "1.0.2"
 sgx_urts = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
-# secp256k1-sgx = { git = "https://github.com/bl4ck5un/rust-secp256k1-sgx", features=["rand"] }
 eth-secp256k1 = { git = "https://github.com/paritytech/rust-secp256k1" }
 
 

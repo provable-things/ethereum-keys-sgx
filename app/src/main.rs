@@ -42,7 +42,7 @@ static ENCLAVE_FILE: &'static str = "enclave.signed.so";
 static ENCLAVE_TOKEN: &'static str = "enclave.token";
 
 extern {
-    fn generate_keypair(eid: sgx_enclave_id_t, retval: *mut sgx_status_t) -> sgx_status_t;
+    fn generate_keypair(eid: sgx_enclave_id_t, retval: *mut sgx_status_t, pub_key_ptr: *mut PublicKey) -> sgx_status_t;
 }
 
 fn init_enclave() -> SgxResult<SgxEnclave> {
@@ -125,12 +125,15 @@ fn main() {
         },
     };
     let mut retval = sgx_status_t::SGX_SUCCESS;
+    let mut pub_key_ptr = PublicKey::new();
+    println!("Public key ptr before {:?}", pub_key_ptr);
     let result = unsafe {
-        generate_keypair(enclave.geteid(), &mut retval)
+        generate_keypair(enclave.geteid(), &mut retval, &mut pub_key_ptr)
     };
     match result {
         sgx_status_t::SGX_SUCCESS => {
-            println!("[+] Successful Enclave function call!")
+            println!("[+] Successful Enclave function call!");
+            println!("Public key ptr after {:?}", pub_key_ptr);
         },
         _ => {
             println!("[-] ECALL Enclave Failed {}!", result.as_str());
