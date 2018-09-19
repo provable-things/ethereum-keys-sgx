@@ -1,0 +1,10 @@
+[package]
+name = "app"
+version = "1.0.0"
+authors = ["Baidu"]
+build = "build.rs"
+
+[dependencies]
+sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
+sgx_urts = { git = "https://github.com/baidu/rust-sgx-sdk" }
+dirs = "1.0.2"

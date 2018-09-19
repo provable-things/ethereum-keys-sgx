@@ -1,0 +1,18 @@
+[package]
+name = "secp256k1-examples"
+version = "0.0.1"
+authors = ["Fan Zhang <fanz@cs.cornell.edu>"]
+
+[lib]
+crate-type = ["staticlib"]
+
+[features]
+default = []
+
+[dependencies]
+secp256k1-sgx = { git = "https://github.com/bl4ck5un/rust-secp256k1-sgx", features=["rand"] }
+
+[target.'cfg(not(target_env = "sgx"))'.dependencies]
+sgx_tstd = { git = "https://github.com/baidu/rust-sgx-sdk", features = ["backtrace"] }
+sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
+sgx_rand = { git = "https://github.com/baidu/rust-sgx-sdk" }

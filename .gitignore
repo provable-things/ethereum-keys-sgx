@@ -1,0 +1,10 @@
+bin/
+target/
+.idea/
+*.o
+*.a
+*.so
+*.la
+Cargo.lock
+Enclave_t.*
+Enclave_u.*
