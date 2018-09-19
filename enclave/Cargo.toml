@@ -9,10 +9,14 @@ crate-type = ["staticlib"]
 [features]
 default = []
 
-[dependencies]
-secp256k1-sgx = { git = "https://github.com/bl4ck5un/rust-secp256k1-sgx", features=["rand"] }
-
 [target.'cfg(not(target_env = "sgx"))'.dependencies]
 sgx_tstd = { git = "https://github.com/baidu/rust-sgx-sdk", features = ["backtrace"] }
 sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_rand = { git = "https://github.com/baidu/rust-sgx-sdk" }
+
+[dependencies]
+# rustc-hex = "1.0" # -> Works with this! TODO: Switch to internal hex converter! (see tests file!)
+# tiny-keccak = "1.4" # -> Works with this! TODO: Switch to sgx safe hash.
+# threadpool = "1.7.1" # -> does not work with this :( 
+# ethereum-types = "0.4.0" # -> does not compile w/ this due to duplicates?
+secp256k1-sgx = { git = "https://github.com/bl4ck5un/rust-secp256k1-sgx", features=["rand"] }
