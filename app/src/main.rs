@@ -26,21 +26,23 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-extern crate sgx_types;
-extern crate sgx_urts;
 extern crate dirs;
-use sgx_types::*;
-use sgx_urts::SgxEnclave;
+extern crate sgx_urts;
+extern crate secp256k1;
+extern crate sgx_types;
 
-use std::io::{Read, Write};
 use std::fs;
 use std::path;
+use sgx_types::*;
+use sgx_urts::SgxEnclave;
+use std::io::{Read, Write};
+use secp256k1::key::PublicKey;
 
 static ENCLAVE_FILE: &'static str = "enclave.signed.so";
 static ENCLAVE_TOKEN: &'static str = "enclave.token";
 
 extern {
-    fn run_tests(eid: sgx_enclave_id_t, retval: *mut sgx_status_t) -> sgx_status_t;
+    fn generate_keypair(eid: sgx_enclave_id_t, retval: *mut sgx_status_t) -> sgx_status_t;
 }
 
 fn init_enclave() -> SgxResult<SgxEnclave> {
@@ -122,20 +124,18 @@ fn main() {
             return;
         },
     };
-
     let mut retval = sgx_status_t::SGX_SUCCESS;
-
     let result = unsafe {
-        run_tests(enclave.geteid(), &mut retval)
+        generate_keypair(enclave.geteid(), &mut retval)
     };
-
     match result {
-        sgx_status_t::SGX_SUCCESS => {},
+        sgx_status_t::SGX_SUCCESS => {
+            println!("[+] Successful Enclave function call!")
+        },
         _ => {
             println!("[-] ECALL Enclave Failed {}!", result.as_str());
             return;
         }
     }
-
     enclave.destroy();
 }
