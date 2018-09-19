@@ -132,8 +132,8 @@ fn main() {
     };
     match result {
         sgx_status_t::SGX_SUCCESS => {
-            println!("[+] Successful Enclave function call!");
-            println!("Public key ptr after {:?}", pub_key_ptr);
+            println!("[+] Key pair successfully generated inside enclave!");
+            println!("[+] {:?}", pub_key_ptr);
         },
         _ => {
             println!("[-] ECALL Enclave Failed {}!", result.as_str());

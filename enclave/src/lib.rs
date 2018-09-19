@@ -13,38 +13,18 @@ mod keygen;
 use sgx_types::*;
 /*
  *
+ * TODO: Seal key struct & re-access after! (Or just priv-key? Do we need to have a struct at all?)
  * TODO: Switch to using the crypto crates' sha3 instead of tiny_keccak!! - Done but oops they aren't the same. Dammit.
- * TODO: Seal a pkS inside the enc and spit out ONLY the pub key!
- * TODO: Have the ETH address generated OUTSIDE the enc form the pk spat out by the enc. 
  * TODO: Make VANITY keygen & threading work!
- * Can have app call generate, rec. priv key, then call gen again if not vanity. Then have method callable via ocall (add to edl!)
- * that'll seal the priv key and close the enc!
+ * TODO:Can have app call generate, rec. priv key, then call gen again if not vanity. 
+ * Then have method callable via ocall (add to edl!)
  * 
  **/
 #[no_mangle]
 pub extern "C" fn generate_keypair(pub_key_ptr: &mut secp256k1::PublicKey) -> sgx_status_t {
-
-    // println!("Pub key ptr before gen. key pair: {:?}", pub_key_ptr);
-    match keygen::KeyPair::new() { // TODO: Try in, out in the EDL, and try the above println! with the :? now.
-        Ok(kp) => {
-            println!("Public key from ok arm: {}", kp.public); // Hex version
-            *pub_key_ptr = kp.public
-        },
-        Err(_e) => {
-            println!("We're in the erorr arm here :(");
-            ()
-        }
+    match keygen::KeyPair::new() {
+        Ok(kp) => *pub_key_ptr = kp.public,
+        Err(_) => ()
     }
-    println!("Public key pointer after the match: {:?}", pub_key_ptr);
     sgx_status_t::SGX_SUCCESS
-
-
-    // // Second, convert the vector to a slice and calculate its SHA256
-    // let result = rsgx_sha256_slice(&input_slice);
-
-    // // Third, copy back the result
-    // match result {
-    //     Ok(output_hash) => *hash = output_hash,
-    //     Err(x) => return x
-    // }
 }
