@@ -123,8 +123,6 @@ fn main() {
         },
     };
 
-    let input_string = String::from("This is a normal world string passed into Enclave!\n");
-
     let mut retval = sgx_status_t::SGX_SUCCESS;
 
     let result = unsafe {

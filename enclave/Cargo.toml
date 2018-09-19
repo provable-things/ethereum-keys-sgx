@@ -13,6 +13,7 @@ default = []
 sgx_tstd = { git = "https://github.com/baidu/rust-sgx-sdk", features = ["backtrace"] }
 sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_rand = { git = "https://github.com/baidu/rust-sgx-sdk" }
+sgx_tcrypto = { git = "https://github.com/baidu/rust-sgx-sdk" }
 
 [dependencies]
 # rustc-hex = "1.0" # -> Works with this! TODO: Switch to internal hex converter! (see tests file!)
