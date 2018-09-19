@@ -13,30 +13,40 @@ use sgx_types::*;
 
 use std::backtrace::{self, PrintFormat};
 
-mod tests;
+// mod tests;
+
+mod keygen;
+
+/*
+ *
+ * TODO: Keygen INSIDE this enc. ONLY the keygen. Have it spit out the
+ * formatted result with the pk redacted. 
+ * TODO: Make VANITY keygen & threading work!
+ * 
+ **/
 
 #[no_mangle]
 pub extern "C" fn run_tests() -> sgx_status_t {
-    println!("starting test");
+    // println!("starting test");
 
-    let _ = backtrace::enable_backtrace("enclave.signed.so", PrintFormat::Short);
+    // let _ = backtrace::enable_backtrace("enclave.signed.so", PrintFormat::Short);
 
-    tests::capabilities();
-    tests::recid_sanity_check();
-    tests::sign();
-    tests::signature_serialize_roundtrip();
-    tests::signature_lax_der();
-    tests::sign_and_verify();
-    tests::sign_and_verify_extreme();
-    tests::sign_and_verify_fail();
-    tests::sign_with_recovery();
-    tests::bad_recovery();
-    tests::test_bad_slice();
-    tests::test_debug_output();
-    tests::test_recov_sig_serialize_compact();
-    tests::test_recov_id_conversion_between_i32();
-    tests::test_low_s();
+    // tests::capabilities();
+    // tests::recid_sanity_check();
+    // tests::sign();
+    // tests::signature_serialize_roundtrip();
+    // tests::signature_lax_der();
+    // tests::sign_and_verify();
+    // tests::sign_and_verify_extreme();
+    // tests::sign_and_verify_fail();
+    // tests::sign_with_recovery();
+    // tests::bad_recovery();
+    // tests::test_bad_slice();
+    // tests::test_debug_output();
+    // tests::test_recov_sig_serialize_compact();
+    // tests::test_recov_id_conversion_between_i32();
+    // tests::test_low_s();
 
-    println!("test finished!");
+    // println!("test finished!");
     sgx_status_t::SGX_SUCCESS
 }
