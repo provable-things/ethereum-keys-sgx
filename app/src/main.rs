@@ -46,8 +46,8 @@ extern {
         eid: sgx_enclave_id_t, 
         retval: *mut sgx_status_t, 
         pub_key: *mut PublicKey, 
-        sealed_log: *mut u8,
-        log_size: *mut u32
+        // sealed_log: *mut u8,
+        // log_size: *const u32
     ) -> sgx_status_t;
 }
 
@@ -139,12 +139,29 @@ fn main() {
         },
     };
 
+    // let mut retval = sgx_status_t::SGX_SUCCESS;
+    // let mut pub_key = PublicKey::new();
+    // let mut sealed_log = [0u8;32]; // Alloc arr. for secret key
+    // let mut log_size: u32 = 1024;
+    // let result = unsafe {
+    //     generate_keypair(enclave.geteid(), &mut retval, &mut pub_key, &mut sealed_log[0], &mut log_size)
+    // };
+    // match result {
+    //     sgx_status_t::SGX_SUCCESS => {
+    //         println!("[+] Key pair successfully generated inside enclave!");
+    //         println!("[+] {:?}", pub_key);
+    //         // println!("[+] Secret key encrypyed maybe? {:?}", sealed_log)
+    //     },
+    //     _ => {
+    //         println!("[-] ECALL Enclave Failed {}!", result.as_str());
+    //         return;
+    //     }
+    // }
+
     let mut retval = sgx_status_t::SGX_SUCCESS;
     let mut pub_key = PublicKey::new();
-    let mut sealed_log = [0u8;32]; // Alloc arr. for secret key
-    let mut log_size: u32 = 1024;
     let result = unsafe {
-        generate_keypair(enclave.geteid(), &mut retval, &mut pub_key, &mut sealed_log[0], &mut log_size)
+        generate_keypair(enclave.geteid(), &mut retval, &mut pub_key)
     };
     match result {
         sgx_status_t::SGX_SUCCESS => {

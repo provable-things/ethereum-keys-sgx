@@ -15,6 +15,5 @@ sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_rand = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_tcrypto = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_tseal = { git = "https://github.com/baidu/rust-sgx-sdk" }
-
-[dependencies]
 secp256k1-sgx = { git = "https://github.com/bl4ck5un/rust-secp256k1-sgx", features=["rand"] }
+

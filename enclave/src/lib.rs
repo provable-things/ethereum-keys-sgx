@@ -33,7 +33,11 @@ use secp256k1::key::{SecretKey, PublicKey};
  * 
  **/
 #[no_mangle]
-pub extern "C" fn generate_keypair(pub_key_ptr: &mut PublicKey, sealed_log: *mut u8, log_size: u32) -> sgx_status_t {
+pub extern "C" fn generate_keypair(
+    pub_key_ptr: &mut PublicKey, 
+    // sealed_log: *mut u8, 
+    // log_size: *const u32
+) -> sgx_status_t {
 
     let keypair = match keygen::KeyPair::new() {
         Ok(kp) => *pub_key_ptr = kp.public,
