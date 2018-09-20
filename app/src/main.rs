@@ -49,6 +49,11 @@ extern {
         // sealed_log: *mut u8,
         // log_size: *const u32
     ) -> sgx_status_t;
+
+    fn create_sealeddata(
+        sealed_log: *mut u8, 
+        sealed_log_size: *const u32
+    ) -> sgx_status_t;
 }
 
 fn init_enclave() -> SgxResult<SgxEnclave> {

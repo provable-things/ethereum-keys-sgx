@@ -101,11 +101,11 @@ RustEnclave_C_Files := $(wildcard ./enclave/*.c)
 RustEnclave_C_Objects := $(RustEnclave_C_Files:.c=.o)
 RustEnclave_Include_Paths := -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc -I$(SGX_SDK)/include/stlport -I$(SGX_SDK)/include/epid -I ./enclave -I./include
 
-RustEnclave_Link_Libs := -L$(CUSTOM_LIBRARY_PATH) -lenclave
+RustEnclave_Link_Libs := -L$(CUSTOM_LIBRARY_PATH) -lcompiler-rt-patch -lenclave
 RustEnclave_Compile_Flags := $(SGX_COMMON_CFLAGS) -nostdinc -fvisibility=hidden -fpie -fstack-protector $(RustEnclave_Include_Paths)
 RustEnclave_Link_Flags := $(SGX_COMMON_CFLAGS) -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -L$(SGX_LIBRARY_PATH) \
 	-Wl,--whole-archive -l$(Trts_Library_Name) -Wl,--no-whole-archive \
-	-Wl,--start-group -lsgx_tstdc -lsgx_tstdcxx -l$(Crypto_Library_Name) $(RustEnclave_Link_Libs) -Wl,--end-group \
+	-Wl,--start-group -lsgx_tstdc -lsgx_tstdcxx -l$(Crypto_Library_Name) -l$(Service_Library_Name) $(RustEnclave_Link_Libs) -Wl,--end-group \
 	-Wl,-Bstatic -Wl,-Bsymbolic -Wl,--no-undefined \
 	-Wl,-pie,-eenclave_entry -Wl,--export-dynamic  \
 	-Wl,--defsym,__ImageBase=0 \
@@ -149,6 +149,7 @@ enclave/Enclave_t.o: $(Enclave_EDL_Files)
 	@echo "CC   <=  $<"
 
 $(RustEnclave_Name): enclave enclave/Enclave_t.o
+	cp ../../compiler-rt/libcompiler-rt-patch.a ./lib
 	@$(CXX) enclave/Enclave_t.o -o $@ $(RustEnclave_Link_Flags)
 	@echo "LINK =>  $@"
 
@@ -159,6 +160,14 @@ $(Signed_RustEnclave_Name): $(RustEnclave_Name)
 .PHONY: enclave
 enclave:
 	$(MAKE) -C ./enclave/
+
+# .PHONY: compiler-rt
+# compiler-rt:
+# 	$(MAKE) -C ../../compiler-rt/ 2> /dev/null
+
+# .PHONY: sgx_ustdc
+# sgx_ustdc:
+# 	$(MAKE) -C ../../sgx_ustdc/ 2> /dev/null
 	
 .PHONY: clean
 clean:

@@ -7,14 +7,14 @@ panic_abort = {}
 git = "https://github.com/baidu/rust-sgx-sdk"
 stage = 1
 
-#[dependencies.sgx_rand]
-#path = "../../../xargo/sgx_rand"
-#stage = 2
-#
-#[dependencies.sgx_serialize]
-#path = "../../../xargo/sgx_serialize"
-#stage = 2
-#
-#[dependencies.sgx_tunittest]
-#path = "../../../xargo/sgx_tunittest"
-#stage = 2
+[dependencies.sgx_rand]
+path = "../../../xargo/sgx_rand"
+stage = 2
+
+[dependencies.sgx_serialize]
+path = "../../../xargo/sgx_serialize"
+stage = 2
+
+[dependencies.sgx_tunittest]
+path = "../../../xargo/sgx_tunittest"
+stage = 2
