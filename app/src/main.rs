@@ -36,13 +36,19 @@ use std::path;
 use sgx_types::*;
 use sgx_urts::SgxEnclave;
 use std::io::{Read, Write};
-use secp256k1::key::PublicKey;
+use secp256k1::key::{PublicKey, SecretKey};
 
 static ENCLAVE_FILE: &'static str = "enclave.signed.so";
 static ENCLAVE_TOKEN: &'static str = "enclave.token";
 
 extern {
-    fn generate_keypair(eid: sgx_enclave_id_t, retval: *mut sgx_status_t, pub_key_ptr: *mut PublicKey) -> sgx_status_t;
+    fn generate_keypair(
+        eid: sgx_enclave_id_t, 
+        retval: *mut sgx_status_t, 
+        pub_key: *mut PublicKey, 
+        sealed_log: *mut u8,
+        log_size: *mut u32
+    ) -> sgx_status_t;
 }
 
 fn init_enclave() -> SgxResult<SgxEnclave> {
@@ -115,6 +121,10 @@ fn init_enclave() -> SgxResult<SgxEnclave> {
 /*
  *
  * TODO: Get sealing to work with the PK!
+ * TODO: Have the first call the enc. do an ::new, which spits out the PublicKey
+ * and a sealed privkey.
+ * TODO: Make it a CLI with an -init option and a -sign option. Have the second used 
+ * to hash & sign the supplied message usig the sealed priv key.
  * 
  **/
 fn main() {
@@ -128,15 +138,19 @@ fn main() {
             return;
         },
     };
+
     let mut retval = sgx_status_t::SGX_SUCCESS;
-    let mut pub_key_ptr = PublicKey::new();
+    let mut pub_key = PublicKey::new();
+    let mut sealed_log = [0u8;32]; // Alloc arr. for secret key
+    let mut log_size: u32 = 1024;
     let result = unsafe {
-        generate_keypair(enclave.geteid(), &mut retval, &mut pub_key_ptr)
+        generate_keypair(enclave.geteid(), &mut retval, &mut pub_key, &mut sealed_log[0], &mut log_size)
     };
     match result {
         sgx_status_t::SGX_SUCCESS => {
             println!("[+] Key pair successfully generated inside enclave!");
-            println!("[+] {:?}", pub_key_ptr);
+            println!("[+] {:?}", pub_key);
+            // println!("[+] Secret key encrypyed maybe? {:?}", sealed_log)
         },
         _ => {
             println!("[-] ECALL Enclave Failed {}!", result.as_str());

@@ -7,7 +7,7 @@ use secp256k1::key::{SecretKey, PublicKey};
 
 pub struct KeyPair {
     pub public: PublicKey,
-    secret: SecretKey,
+    pub(crate) secret: SecretKey, // FIXME: Make private getter for it instead?
 }
 
 impl fmt::Display for KeyPair {
@@ -23,7 +23,6 @@ impl KeyPair {
         let p = get_public_key_from_secret(s);
         Ok(KeyPair{secret: s, public: p})
     }
-     // TODO: Make method to seal and return the encrypted priv key to main and impl here!
 }
 
 fn generate_random_priv_key() -> Result<SecretKey, SecpError> {

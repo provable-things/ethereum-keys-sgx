@@ -5,6 +5,10 @@ enclave {
     from "sgx_tstdc.edl" import *;
     trusted {
         /* define ECALLs here. */
-        public sgx_status_t generate_keypair([out, count=64] uint8_t *pub_key_ptr);
+        public sgx_status_t generate_keypair(
+          [out, count=64] uint8_t *pub_key, 
+          [out, size=sealed_log_size]  uint8_t* sealed_log,
+          uint32_t sealed_log_size 
+        );
     };
 };
