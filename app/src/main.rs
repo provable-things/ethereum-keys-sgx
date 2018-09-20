@@ -112,7 +112,11 @@ fn init_enclave() -> SgxResult<SgxEnclave> {
 
     Ok(enclave)
 }
-
+/*
+ *
+ * TODO: Get sealing to work with the PK!
+ * 
+ **/
 fn main() {
     let enclave = match init_enclave() {
         Ok(r) => {
@@ -126,7 +130,6 @@ fn main() {
     };
     let mut retval = sgx_status_t::SGX_SUCCESS;
     let mut pub_key_ptr = PublicKey::new();
-    println!("Public key ptr before {:?}", pub_key_ptr);
     let result = unsafe {
         generate_keypair(enclave.geteid(), &mut retval, &mut pub_key_ptr)
     };
