@@ -51,7 +51,6 @@ extern {
     fn create_sealeddata(
         eid: sgx_enclave_id_t, 
         retval: *mut sgx_status_t, 
-        // sealed_log: *mut sgx_sealed_data_t,
         sealed_log: *mut u8,
         sealed_log_size: *const u32
     ) -> sgx_status_t;
@@ -59,7 +58,6 @@ extern {
     fn verify_sealeddata(
         eid: sgx_enclave_id_t, 
         retval: *mut sgx_status_t, 
-        // sealed_log: *mut sgx_sealed_data_t,
         sealed_log: *mut u8,
         sealed_log_size: *const u32
     ) -> sgx_status_t;
@@ -133,6 +131,7 @@ fn init_enclave() -> SgxResult<SgxEnclave> {
     Ok(enclave)
 }
 /*
+ *
  * TODO: Get sealing to work with the PK!
  * TODO: Have the first call the enc. do an ::new, which spits out the PublicKey
  * and a sealed privkey.
@@ -151,26 +150,6 @@ fn main() {
             return;
         },
     };
-
-    // let mut retval = sgx_status_t::SGX_SUCCESS;
-    // let mut pub_key = PublicKey::new();
-    // let mut sealed_log = [0u8;32]; // Alloc arr. for secret key
-    // let mut log_size: u32 = 1024;
-    // let result = unsafe {
-    //     generate_keypair(enclave.geteid(), &mut retval, &mut pub_key, &mut sealed_log[0], &mut log_size)
-    // };
-    // match result {
-    //     sgx_status_t::SGX_SUCCESS => {
-    //         println!("[+] Key pair successfully generated inside enclave!");
-    //         println!("[+] {:?}", pub_key);
-    //         // println!("[+] Secret key encrypyed maybe? {:?}", sealed_log)
-    //     },
-    //     _ => {
-    //         println!("[-] ECALL Enclave Failed {}!", result.as_str());
-    //         return;
-    //     }
-    // }
-
     let mut retval = sgx_status_t::SGX_SUCCESS;
     let mut pub_key = PublicKey::new();
     let result = unsafe {
@@ -180,32 +159,19 @@ fn main() {
         sgx_status_t::SGX_SUCCESS => {
             println!("[+] Key pair successfully generated inside enclave!");
             println!("[+] {:?}", pub_key);
-            // println!("[+] Secret key encrypted maybe? {:?}", sealed_log)
         },
         _ => {
             println!("[-] ECALL to enclave failed {}!", result.as_str());
             return;
         }
     };
-
     let x = std::mem::size_of::<sgx_sealed_data_t>();
-    println!("Size of the empty struct {}", x);
-
-    let mut sealed_log_size: usize = x + 16;//x + 16;
-    // let mut thingy = sgx_sealed_data_t::default();
-    // let mut thingy = vec![0u8; sealed_log_size];//vec![0u8]; <- core dumps!
-    let mut thingy = [0u8;576];
-    let ptr: *mut u8 = &mut thingy[0];
-
-    println!("Before thingy: {:?}", &thingy[..]);
-    
+    let mut sealed_log_size: usize = x + 16; // FIXME: Magic number! (size of random data we stored...)
+    let mut seal_alloc = vec![0u8; sealed_log_size];
+    let ptr: *mut u8 = &mut seal_alloc[0];
     let result2 = unsafe {
-        // create_sealeddata(enclave.geteid(), &mut retval, raw_ptr, &mut sealed_log_size as *const u32)
-        // create_sealeddata(enclave.geteid(), &mut retval, sealed_log[0] as *mut u8, sealed_log_size as *const u32)
-        // create_sealeddata(enclave.geteid(), &mut retval, &mut thingy[0], sealed_log_size as *const u32) 
         create_sealeddata(enclave.geteid(), &mut retval, ptr, sealed_log_size as *const u32)
     };
-
     match result2 {
         sgx_status_t::SGX_SUCCESS => {
             println!("[+] create_sealeddata function call was successful! It returned: {}", result2.as_str());
@@ -215,15 +181,9 @@ fn main() {
             return;
         }
     };
-
-    println!("After thingy: {:?}", &thingy[..]);
-
-
-
     let result3 = unsafe {
         verify_sealeddata(enclave.geteid(), &mut retval, ptr, sealed_log_size as *const u32)
     };
-
     match result3 {
         sgx_status_t::SGX_SUCCESS => {
             println!("[+] verify_sealeddata function call was successful! It returned: {}", result3.as_str());
@@ -233,8 +193,5 @@ fn main() {
             return;
         }
     };
-
-
-    
     enclave.destroy();
 }
