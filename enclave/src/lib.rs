@@ -11,18 +11,21 @@ extern crate sgx_tcrypto;
 extern crate sgx_tstd as std;
 
 mod keygen;
+use std::str;
+use std::slice;
 use sgx_types::*;
 use keygen::KeyPair;
 use sgx_rand::{Rng, StdRng};
 use sgx_tseal::SgxSealedData;
+use key::{SecretKey, PublicKey};
+use secp256k1::Error as SecpError;
 use sgx_types::marker::ContiguousMemory;
-use secp256k1::key::{SecretKey, PublicKey};
+use secp256k1::{Secp256k1, Message, key};
 /*
- *
- * TODO: Seal key struct & re-access after! (Or just priv-key? Do we need to have a struct at all?)
- * TODO: Switch to using the crypto crates' sha3 instead of tiny_keccak!! - Done but oops they aren't the same. Dammit.
  * TODO: Make VANITY keygen & threading work!
- * TODO:Can have app call generate, rec. priv key, then call gen again if not vanity. 
+ * TODO: Can have app call generate, rec. priv key, then call gen again if not vanity.
+ * TODO: Factor stuff out to a proper app style like the other keygen I made.
+ * TODO: Create better error handling for custom functions etc.
  * Then have method callable via ocall (add to edl!)
  * Note: MRENCLAVE signed = only THAT enc can unseal.
  * Note: MRSIGNER signed = other encs. by author can unseal.
@@ -53,54 +56,43 @@ pub extern "C" fn generate_keypair(
     sgx_status_t::SGX_SUCCESS
 }
 
-// #[no_mangle]
-// pub extern "C" fn sign_message(
+#[no_mangle]
+pub extern "C" fn sign_message(
+    sealed_log: * mut u8, 
+    sealed_log_size: u32,
+    hash_msg: * mut u8
+) -> sgx_status_t {
+    let opt = from_sealed_log::<KeyPair>(sealed_log, sealed_log_size);
+    let sealed_data = match opt {
+        Some(x) => x,
+        None => {return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;},
+    };
+    let result = sealed_data.unseal_data();
+    let unsealed_data = match result {
+        Ok(x) => x,
+        Err(ret) => {return ret;}, 
+    };
+    let data: KeyPair = *unsealed_data.get_decrypt_txt();
+    let hash = unsafe { slice::from_raw_parts(hash_msg, 32) };// FIXME: Magic number - pass thru!
+    let mut x = [0u8;32];
+    x.copy_from_slice(&hash[..]);
+    println!("[+] [Enclave] From decrypted file : {:?}", data.public);
+    println!("[+] [Enclave] From decrypted file : {:?}", data.secret);
+    let signed_msg = sign_message_hash(x, &data);//.unwrap(); // FIXME: Handle error better!
+    println!("[+] [Enclave] Signed message: {:?}", &signed_msg[..]);
+    sgx_status_t::SGX_SUCCESS
+}
 
-// ) -> sgx_status_t {
-
-// }
-
-// #[no_mangle]
-// pub extern "C" fn create_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) -> sgx_status_t {
-//     let mut data = RandData::default();
-//     let mut rand = match StdRng::new() {
-//         Ok(rng) => rng,
-//         Err(_) => { return sgx_status_t::SGX_ERROR_UNEXPECTED; },
-//     };
-//     rand.fill_bytes(&mut data.rand);
-//     let aad: [u8; 0] = [0_u8; 0];
-//     let result = SgxSealedData::<RandData>::seal_data(&aad, &data);
-//     let sealed_data = match result {
-//         Ok(x) => x,
-//         Err(ret) => {return ret;}, 
-//     };
-//     let raw_size = sgx_tseal::SgxSealedData::<'_,RandData>::calc_raw_sealed_data_size(0, 16);
-//     let opt = to_sealed_log(&sealed_data, sealed_log, sealed_log_size);
-//     if opt.is_none() {
-//         return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;
-//     };
-//     println!("Random data that's been encrypted: {:?}", data);
-//     sgx_status_t::SGX_SUCCESS
-// }
-
-
-// #[no_mangle]
-// pub extern "C" fn verify_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) -> sgx_status_t {
-//     let opt = from_sealed_log::<RandData>(sealed_log, sealed_log_size);
-//     let sealed_data = match opt {
-//         Some(x) => x,
-//         None => {return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;},
-//     };
-//     let result = sealed_data.unseal_data();
-//     let unsealed_data = match result {
-//         Ok(x) => x,
-//         Err(ret) => {return ret;}, 
-//     };
-//     let data = unsealed_data.get_decrypt_txt();
-//     println!("Data that's been unencrypted {:?}", data);
-//     sgx_status_t::SGX_SUCCESS
-// }
-
+pub fn sign_message_hash(hashed_msg: [u8;32], keyset: &KeyPair) -> [u8;65] {//Result<[u8;65], SecpError> {
+    let message = Message::from_slice(&hashed_msg).expect("32 bytes");
+    let secp_context = Secp256k1::new();
+    let sig = secp_context.sign_recoverable(&message, &keyset.secret);
+    let (rec_id, data) = sig.serialize_compact(&secp_context);
+    let mut data_arr = [0; 65];
+    data_arr[0..64].copy_from_slice(&data[0..64]);
+    data_arr[64] = rec_id.to_i32() as u8;
+    data_arr
+}
 
 fn to_sealed_log<T: Copy + ContiguousMemory>(
     sealed_data: &SgxSealedData<T>, 

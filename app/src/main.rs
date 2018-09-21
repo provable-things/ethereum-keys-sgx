@@ -30,11 +30,13 @@ extern crate dirs;
 extern crate sgx_urts;
 extern crate secp256k1;
 extern crate sgx_types;
+extern crate tiny_keccak;
 
 use std::fs;
 use std::path;
 use sgx_types::*;
 use std::mem::size_of;
+use tiny_keccak::Keccak;
 use sgx_urts::SgxEnclave;
 use std::io::{Read, Write};
 use secp256k1::key::{PublicKey, SecretKey};
@@ -51,19 +53,13 @@ extern {
         sealed_log_size: *const u32
     ) -> sgx_status_t;
 
-    // fn create_sealeddata(
-    //     eid: sgx_enclave_id_t, 
-    //     retval: *mut sgx_status_t, 
-    //     sealed_log: *mut u8,
-    //     sealed_log_size: *const u32
-    // ) -> sgx_status_t;
-
-    // fn verify_sealeddata(
-    //     eid: sgx_enclave_id_t, 
-    //     retval: *mut sgx_status_t, 
-    //     sealed_log: *mut u8,
-    //     sealed_log_size: *const u32
-    // ) -> sgx_status_t;
+    fn sign_message(
+        eid: sgx_enclave_id_t, 
+        retval: *mut sgx_status_t, 
+        sealed_log: *mut u8,
+        sealed_log_size: *const u32,
+        hashed_message: *mut u8
+    ) -> sgx_status_t;
 }
 
 fn init_enclave() -> SgxResult<SgxEnclave> {
@@ -135,7 +131,6 @@ fn init_enclave() -> SgxResult<SgxEnclave> {
 }
 /*
  *
- * TODO: Get sealing to work with the PK!
  * TODO: Factor out to a lib crate eventually!
  * TODO: Have the first call the enc. do an ::new, which spits out the PublicKey
  * and a sealed privkey.
@@ -146,11 +141,11 @@ fn init_enclave() -> SgxResult<SgxEnclave> {
 fn main() {
     let enclave = match init_enclave() {
         Ok(r) => {
-            println!("[+] Init Enclave Successful {}!", r.geteid());
+            println!("[+] [App] Init Enclave Successful {}!", r.geteid());
             r
         },
         Err(x) => {
-            println!("[-] Init Enclave Failed {}!", x.as_str());
+            println!("[-] [App] Init Enclave Failed {}!", x.as_str());
             return;
         },
     };
@@ -166,45 +161,39 @@ fn main() {
     };
     match result {
         sgx_status_t::SGX_SUCCESS => {
-            println!("[+] Key pair successfully generated inside enclave");
-            println!("[+] Keypair successfully sealed outside of enclave");
-            println!("[+] {:?}", pub_key);
+            println!("[+] [App] Key pair successfully generated inside enclave");
+            println!("[+] [App] Keypair successfully sealed outside of enclave");
+            println!("[+] [App] Retrievd from enclave: {:?}", pub_key);
         },
         _ => {
-            println!("[-] ECALL to enclave failed {}!", result.as_str());
+            println!("[-] [App] ECALL to enclave failed {}!", result.as_str());
             return;
         }
     };
     let path = String::from("./encrypted_keypair.txt");
     write_file(&path, &seal_alloc);
-    println!("[+] Encrypted key pair successfully written to disk!");
-    let contents = read_file_as_vec(&path);
-    println!("[+] File successfully read from disk!");
-    println!("[+] File contents {:?}", &contents[..]);
-    // let result2 = unsafe {
-    //     create_sealeddata(enclave.geteid(), &mut retval, ptr, sealed_log_size as *const u32)
-    // };
-    // match result2 {
-    //     sgx_status_t::SGX_SUCCESS => {
-    //         println!("[+] create_sealeddata function call was successful! It returned: {}", result2.as_str());
-    //     },
-    //     _ => {
-    //         println!("[-] ECALL to enclave failed! {}", result2.as_str());
-    //         return;
-    //     }
-    // };
-    // let result3 = unsafe {
-    //     verify_sealeddata(enclave.geteid(), &mut retval, ptr, sealed_log_size as *const u32)
-    // };
-    // match result3 {
-    //     sgx_status_t::SGX_SUCCESS => {
-    //         println!("[+] verify_sealeddata function call was successful! It returned: {}", result3.as_str());
-    //     },
-    //     _ => {
-    //         println!("[-] ECALL to enclave failed! {}", result3.as_str());
-    //         return;
-    //     }
-    // };
+    println!("[+] [App] Encrypted key pair successfully written to disk!");
+    let mut contents = read_file_as_vec(&path);
+    println!("[+] [App] File successfully read from disk!");
+    let ptr2: *mut u8 = &mut contents[0]; 
+    let msg = "Hello Oraclize!";
+    println!("[+] [App] Message to sign: {}", msg);
+    let mut msg_hash = hash_message(msg);
+    println!("[+] [App] Hashed message {:?}", msg_hash);
+    let hash_ptr: *mut u8 = &mut msg_hash[0]; 
+
+    let result2 = unsafe {
+        sign_message(enclave.geteid(), &mut retval, ptr2, sealed_log_size as *const u32, hash_ptr)
+    };
+    match result2 {
+        sgx_status_t::SGX_SUCCESS => {
+            println!("[+] [App] Sign message function call was successful! It returned: {}", result2.as_str());
+        },
+        _ => {
+            println!("[-] [App] ECALL to enclave failed! {}", result2.as_str());
+            return;
+        }
+    };
     enclave.destroy();
 }
 
@@ -213,42 +202,30 @@ pub struct KeyPair {
     secret: SecretKey
 }
 
-// use std::error::Error;
-// use std::fs::File;
-// use std::io::prelude::*;
-// use std::path::Path;
+fn hash_message(msg: &str) -> [u8;32] { // ISSUE: Need to make work with vectors!!
+    msg.as_bytes().keccak256()
+}
 
-// fn write_file() {
-//     // Create a path to the desired file
-//     let path = Path::new("hello.txt");
-//     let display = path.display();
-
-//     // Open the path in read-only mode, returns `io::Result<File>`
-//     let mut file = match File::open(&path) {
-//         // The `description` method of `io::Error` returns a string that
-//         // describes the error
-//         Err(why) => panic!("couldn't open {}: {}", display,
-//                                                    why.description()),
-//         Ok(file) => file,
-//     };
-
-//     // Read the file contents into a string, returns `io::Result<usize>`
-//     let mut s = String::new();
-//     match file.read_to_string(&mut s) {
-//         Err(why) => panic!("couldn't read {}: {}", display,
-//                                                    why.description()),
-//         Ok(_) => print!("{} contains:\n{}", display, s),
-//     }
-
-//     // `file` goes out of scope, and the "hello.txt" file gets closed
-// }
-
-pub fn write_file(path: &String, data: &Vec<u8>) {
+fn write_file(path: &String, data: &Vec<u8>) {
     fs::write(path, data).expect("Unable to write file!")
 }
 
-pub fn read_file_as_vec(path: &String) -> Vec<u8> {
-    let data = fs::read(path).expect("Unable to read file");
-    println!("Vec length: {}", data.len());
-    data
+fn read_file_as_vec(path: &String) -> Vec<u8> {
+    fs::read(path).expect("Unable to read file")
 }
+
+pub trait Keccak256<T> {
+    fn keccak256(&self) -> T where T: Sized;
+}
+
+impl Keccak256<[u8; 32]> for [u8] {
+    fn keccak256(&self) -> [u8; 32] {
+        let mut keccak = Keccak::new_keccak256();
+        let mut result = [0u8; 32];
+        keccak.update(self);
+        keccak.finalize(&mut result);
+        result
+    }
+}
+
+
