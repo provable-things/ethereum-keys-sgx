@@ -175,6 +175,12 @@ fn main() {
             return;
         }
     };
+    let path = String::from("./encrypted_keypair.txt");
+    write_file(&path, &seal_alloc);
+    println!("[+] Encrypted key pair successfully written to disk!");
+    let contents = read_file_as_vec(&path);
+    println!("[+] File successfully read from disk!");
+    println!("[+] File contents {:?}", &contents[..]);
     // let result2 = unsafe {
     //     create_sealeddata(enclave.geteid(), &mut retval, ptr, sealed_log_size as *const u32)
     // };
@@ -205,4 +211,44 @@ fn main() {
 pub struct KeyPair {
     public: PublicKey,
     secret: SecretKey
+}
+
+// use std::error::Error;
+// use std::fs::File;
+// use std::io::prelude::*;
+// use std::path::Path;
+
+// fn write_file() {
+//     // Create a path to the desired file
+//     let path = Path::new("hello.txt");
+//     let display = path.display();
+
+//     // Open the path in read-only mode, returns `io::Result<File>`
+//     let mut file = match File::open(&path) {
+//         // The `description` method of `io::Error` returns a string that
+//         // describes the error
+//         Err(why) => panic!("couldn't open {}: {}", display,
+//                                                    why.description()),
+//         Ok(file) => file,
+//     };
+
+//     // Read the file contents into a string, returns `io::Result<usize>`
+//     let mut s = String::new();
+//     match file.read_to_string(&mut s) {
+//         Err(why) => panic!("couldn't read {}: {}", display,
+//                                                    why.description()),
+//         Ok(_) => print!("{} contains:\n{}", display, s),
+//     }
+
+//     // `file` goes out of scope, and the "hello.txt" file gets closed
+// }
+
+pub fn write_file(path: &String, data: &Vec<u8>) {
+    fs::write(path, data).expect("Unable to write file!")
+}
+
+pub fn read_file_as_vec(path: &String) -> Vec<u8> {
+    let data = fs::read(path).expect("Unable to read file");
+    println!("Vec length: {}", data.len());
+    data
 }

@@ -54,6 +54,13 @@ pub extern "C" fn generate_keypair(
 }
 
 // #[no_mangle]
+// pub extern "C" fn sign_message(
+
+// ) -> sgx_status_t {
+
+// }
+
+// #[no_mangle]
 // pub extern "C" fn create_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) -> sgx_status_t {
 //     let mut data = RandData::default();
 //     let mut rand = match StdRng::new() {
