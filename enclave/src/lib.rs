@@ -85,6 +85,8 @@ unsafe impl ContiguousMemory for RandData {}
 
 #[no_mangle]
 pub extern "C" fn create_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) -> sgx_status_t {
+    println!("Before: sealed log pointer: {:?}", sealed_log);
+    println!("Before: the sealed log size: {}", sealed_log_size);
 
     let mut data = RandData::default();
     // data.key = 0x1234;
@@ -111,11 +113,14 @@ pub extern "C" fn create_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) 
     };
 
     // println!("raw payload size: {}", sealed_data.calc_raw_sealed_data_size()); // didn't work, assoc. func. apparently
-    let raw_size = sgx_tseal::SgxSealedData::<'_,RandData>::calc_raw_sealed_data_size(16, sealed_log_size);
-    println!("raw payload size: {}", raw_size);
-    println!("Or here?");
-    println!("payload size: {}", sealed_data.get_payload_size());
-    println!("encrypt text length {}", sealed_data.get_encrypt_txt_len());
+    let raw_size = sgx_tseal::SgxSealedData::<'_,RandData>::calc_raw_sealed_data_size(0, 16);
+    println!("Before: raw payload size: {}", raw_size);
+    println!("Before: payload size: {}", sealed_data.get_payload_size());
+    println!("Before: encrypt text length {}", sealed_data.get_encrypt_txt_len());
+    println!("Before: added mac length {}", sealed_data.get_add_mac_txt_len());
+    println!("Before: payload tag {:?}", &sealed_data.get_payload_tag()[..]);
+    println!("Before: encrypt text: {:?}", sealed_data.get_encrypt_txt());
+    println!("Before: additional txt: {:?}", sealed_data.get_additional_txt());
 
     let opt = to_sealed_log(&sealed_data, sealed_log, sealed_log_size);
     if opt.is_none() {
@@ -131,7 +136,8 @@ pub extern "C" fn create_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) 
 
 #[no_mangle]
 pub extern "C" fn verify_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) -> sgx_status_t {
-
+    println!("After: sealed log pointer: {:?}", sealed_log);
+    println!("After: the sealed log size: {}", sealed_log_size);
     let opt = from_sealed_log::<RandData>(sealed_log, sealed_log_size);
     let sealed_data = match opt {
         Some(x) => x,
@@ -140,9 +146,13 @@ pub extern "C" fn verify_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) 
             return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;
         },
     };
-    
+    println!("After: payload size: {}", sealed_data.get_payload_size());
+    println!("After: encrypt text length {}", sealed_data.get_encrypt_txt_len());
+    println!("After: added mac length {}", sealed_data.get_add_mac_txt_len());
+    println!("After: payload tag {:?}", &sealed_data.get_payload_tag()[..]);
+    println!("After: encrypt text: {:?}", sealed_data.get_encrypt_txt());
+    println!("After: additional txt: {:?}", sealed_data.get_additional_txt());
     let result = sealed_data.unseal_data();
-    println!("Or failing here?");
     let unsealed_data = match result {
         Ok(x) => x,
         Err(ret) => {
@@ -160,13 +170,19 @@ pub extern "C" fn verify_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) 
 
 
 // So same story, we pass in a ptr to correct sized allocd. mem then write to it.
-fn to_sealed_log<T: Copy + ContiguousMemory>(sealed_data: &SgxSealedData<T>, sealed_log: * mut u8, sealed_log_size: u32) -> Option<* mut sgx_sealed_data_t> {
+fn to_sealed_log<T: Copy + ContiguousMemory>(
+    sealed_data: &SgxSealedData<T>, 
+    sealed_log: * mut u8, sealed_log_size: u32
+) -> Option<* mut sgx_sealed_data_t> {
     unsafe {
         // Convert a pointer of sgx_sealed_data_t buffer to SgxSealedData.
         sealed_data.to_raw_sealed_data_t(sealed_log as * mut sgx_sealed_data_t, sealed_log_size)
     }
 }
-fn from_sealed_log<'a, T: Copy + ContiguousMemory>(sealed_log: * mut u8, sealed_log_size: u32) -> Option<SgxSealedData<'a, T>> {
+fn from_sealed_log<'a, T: Copy + ContiguousMemory>(
+    sealed_log: * mut u8, 
+    sealed_log_size: u32
+) -> Option<SgxSealedData<'a, T>> {
     unsafe {
         // Convert a pointer of sgx_sealed_data_t buffer to SgxSealedDataS
         SgxSealedData::<T>::from_raw_sealed_data_t(sealed_log as * mut sgx_sealed_data_t, sealed_log_size)

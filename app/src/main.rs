@@ -193,11 +193,11 @@ fn main() {
 
     let mut sealed_log_size: usize = x + 16;//x + 16;
     // let mut thingy = sgx_sealed_data_t::default();
-    let mut thingy = vec![0u8; sealed_log_size];//vec![0u8]; <- core dumps!
-    // let mut thingy = [0u8;576];
+    // let mut thingy = vec![0u8; sealed_log_size];//vec![0u8]; <- core dumps!
+    let mut thingy = [0u8;576];
     let ptr: *mut u8 = &mut thingy[0];
 
-    println!("vec before: {:?}", &thingy[..]);
+    println!("Before thingy: {:?}", &thingy[..]);
     
     let result2 = unsafe {
         // create_sealeddata(enclave.geteid(), &mut retval, raw_ptr, &mut sealed_log_size as *const u32)
@@ -216,13 +216,12 @@ fn main() {
         }
     };
 
-    println!("vec after: {:?}", &thingy[..]);
-    // let deref: &sgx_sealed_data_t = &(*ptr as sgx_sealed_data_t);
+    println!("After thingy: {:?}", &thingy[..]);
 
 
 
     let result3 = unsafe {
-        verify_sealeddata(enclave.geteid(), &mut retval, &mut thingy[0], sealed_log_size as *const u32)
+        verify_sealeddata(enclave.geteid(), &mut retval, ptr, sealed_log_size as *const u32)
     };
 
     match result3 {
