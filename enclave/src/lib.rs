@@ -12,6 +12,7 @@ extern crate sgx_tstd as std;
 
 mod keygen;
 use sgx_types::*;
+use keygen::KeyPair;
 use sgx_rand::{Rng, StdRng};
 use sgx_tseal::SgxSealedData;
 use sgx_types::marker::ContiguousMemory;
@@ -30,62 +31,68 @@ use secp256k1::key::{SecretKey, PublicKey};
 #[no_mangle]
 pub extern "C" fn generate_keypair(
     pub_key_ptr: &mut PublicKey, 
+    sealed_log: * mut u8, 
+    sealed_log_size: u32
 ) -> sgx_status_t {
-    println!("Do we even see stuff from inside the enc?");
-    let keypair = match keygen::KeyPair::new() {
-        Ok(kp) => *pub_key_ptr = kp.public,
+    let keypair = match KeyPair::new() {
+        Ok(kp) => {
+            *pub_key_ptr = kp.public;
+            kp
+        },
         Err(_) => {return sgx_status_t::SGX_ERROR_UNEXPECTED;}
     };
-    sgx_status_t::SGX_SUCCESS
-}
-
-#[derive(Copy, Clone, Default, Debug)]
-struct RandData {
-    rand: [u8; 16],
-}
-
-unsafe impl ContiguousMemory for RandData {}
-
-#[no_mangle]
-pub extern "C" fn create_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) -> sgx_status_t {
-    let mut data = RandData::default();
-    let mut rand = match StdRng::new() {
-        Ok(rng) => rng,
-        Err(_) => { return sgx_status_t::SGX_ERROR_UNEXPECTED; },
-    };
-    rand.fill_bytes(&mut data.rand);
-    let aad: [u8; 0] = [0_u8; 0];
-    let result = SgxSealedData::<RandData>::seal_data(&aad, &data);
-    let sealed_data = match result {
+    let aad: [u8; 0] = [0_u8; 0]; // Empty additional data...
+    let sealed_data = match SgxSealedData::<KeyPair>::seal_data(&aad, &keypair) {
         Ok(x) => x,
         Err(ret) => {return ret;}, 
     };
-    let raw_size = sgx_tseal::SgxSealedData::<'_,RandData>::calc_raw_sealed_data_size(0, 16);
     let opt = to_sealed_log(&sealed_data, sealed_log, sealed_log_size);
     if opt.is_none() {
         return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;
     };
-    println!("Random data that's been encrypted: {:?}", data);
     sgx_status_t::SGX_SUCCESS
 }
 
+// #[no_mangle]
+// pub extern "C" fn create_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) -> sgx_status_t {
+//     let mut data = RandData::default();
+//     let mut rand = match StdRng::new() {
+//         Ok(rng) => rng,
+//         Err(_) => { return sgx_status_t::SGX_ERROR_UNEXPECTED; },
+//     };
+//     rand.fill_bytes(&mut data.rand);
+//     let aad: [u8; 0] = [0_u8; 0];
+//     let result = SgxSealedData::<RandData>::seal_data(&aad, &data);
+//     let sealed_data = match result {
+//         Ok(x) => x,
+//         Err(ret) => {return ret;}, 
+//     };
+//     let raw_size = sgx_tseal::SgxSealedData::<'_,RandData>::calc_raw_sealed_data_size(0, 16);
+//     let opt = to_sealed_log(&sealed_data, sealed_log, sealed_log_size);
+//     if opt.is_none() {
+//         return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;
+//     };
+//     println!("Random data that's been encrypted: {:?}", data);
+//     sgx_status_t::SGX_SUCCESS
+// }
 
-#[no_mangle]
-pub extern "C" fn verify_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) -> sgx_status_t {
-    let opt = from_sealed_log::<RandData>(sealed_log, sealed_log_size);
-    let sealed_data = match opt {
-        Some(x) => x,
-        None => {return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;},
-    };
-    let result = sealed_data.unseal_data();
-    let unsealed_data = match result {
-        Ok(x) => x,
-        Err(ret) => {return ret;}, 
-    };
-    let data = unsealed_data.get_decrypt_txt();
-    println!("Data that's been unencrypted {:?}", data);
-    sgx_status_t::SGX_SUCCESS
-}
+
+// #[no_mangle]
+// pub extern "C" fn verify_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) -> sgx_status_t {
+//     let opt = from_sealed_log::<RandData>(sealed_log, sealed_log_size);
+//     let sealed_data = match opt {
+//         Some(x) => x,
+//         None => {return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;},
+//     };
+//     let result = sealed_data.unseal_data();
+//     let unsealed_data = match result {
+//         Ok(x) => x,
+//         Err(ret) => {return ret;}, 
+//     };
+//     let data = unsealed_data.get_decrypt_txt();
+//     println!("Data that's been unencrypted {:?}", data);
+//     sgx_status_t::SGX_SUCCESS
+// }
 
 
 fn to_sealed_log<T: Copy + ContiguousMemory>(

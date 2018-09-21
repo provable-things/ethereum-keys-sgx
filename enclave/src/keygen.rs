@@ -3,12 +3,16 @@ use std::vec::Vec;
 use secp256k1::Secp256k1;
 use sgx_rand::{Rng, thread_rng};
 use secp256k1::Error as SecpError;
+use sgx_types::marker::ContiguousMemory;
 use secp256k1::key::{SecretKey, PublicKey};
 
+#[derive(Copy, Clone, Debug)]
 pub struct KeyPair {
     pub public: PublicKey,
     pub(crate) secret: SecretKey, // FIXME: Make private getter for it instead?
 }
+
+unsafe impl ContiguousMemory for KeyPair{}
 
 impl fmt::Display for KeyPair {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
