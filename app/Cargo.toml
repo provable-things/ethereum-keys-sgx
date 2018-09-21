@@ -9,5 +9,3 @@ dirs = "1.0.2"
 sgx_urts = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
 eth-secp256k1 = { git = "https://github.com/paritytech/rust-secp256k1" }
-
-

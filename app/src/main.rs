@@ -46,14 +46,13 @@ extern {
         eid: sgx_enclave_id_t, 
         retval: *mut sgx_status_t, 
         pub_key: *mut PublicKey, 
-        // sealed_log: *mut u8,
-        // log_size: *const u32
     ) -> sgx_status_t;
 
     fn create_sealeddata(
         eid: sgx_enclave_id_t, 
         retval: *mut sgx_status_t, 
-        sealed_log: *mut u8, 
+        // sealed_log: *mut u8, 
+        sealed_log: *mut sgx_sealed_data_t,
         sealed_log_size: *const u32
     ) -> sgx_status_t;
 }
@@ -181,32 +180,27 @@ fn main() {
         }
     };
 
-
-
+    let x = std::mem::size_of::<sgx_sealed_data_t>();
+    println!("Size of the empty struct {}", x);
 
     let mut sealed_log_size: u32 = 1024;
-	let mut sealed_log = [0u8;1024];
-    let raw_ptr = sealed_log[0] as *mut u8;
-
-
-    println!("Sealed log before failure: {:?}", &sealed_log[..]);
-
+    let mut thingy = sgx_sealed_data_t::default();
+    
     let result2 = unsafe {
         // create_sealeddata(enclave.geteid(), &mut retval, raw_ptr, &mut sealed_log_size as *const u32) // holy shit this worked!
-        create_sealeddata(enclave.geteid(), &mut retval, sealed_log[0] as *mut u8, sealed_log_size as *const u32) // holy shit this worked too!
+        // create_sealeddata(enclave.geteid(), &mut retval, sealed_log[0] as *mut u8, sealed_log_size as *const u32) // holy shit this worked too!
+        create_sealeddata(enclave.geteid(), &mut retval, &mut thingy, sealed_log_size as *const u32) // holy shit this worked too!
     };
 
     match result2 {
         sgx_status_t::SGX_SUCCESS => {
-            println!("[+] create_sealeddata function call was successful!");
+            println!("[+] create_sealeddata function call was successful! It returned: {}", result2.as_str());
         },
         _ => {
             println!("[-] ECALL to enclave failed! {}", result2.as_str());
             return;
         }
     };
-
-    println!("Sealed log after: {:?}", &sealed_log[..]);
     
     enclave.destroy();
 }
