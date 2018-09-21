@@ -165,32 +165,35 @@ fn main() {
     // }
 
     let mut retval = sgx_status_t::SGX_SUCCESS;
-    // let mut pub_key = PublicKey::new();
-    // let result = unsafe {
-    //     generate_keypair(enclave.geteid(), &mut retval, &mut pub_key)
-    // };
-    // match result {
-    //     sgx_status_t::SGX_SUCCESS => {
-    //         println!("[+] Key pair successfully generated inside enclave!");
-    //         println!("[+] {:?}", pub_key);
-    //         // println!("[+] Secret key encrypted maybe? {:?}", sealed_log)
-    //     },
-    //     _ => {
-    //         println!("[-] ECALL to enclave failed {}!", result.as_str());
-    //         return;
-    //     }
-    // };
+    let mut pub_key = PublicKey::new();
+    let result = unsafe {
+        generate_keypair(enclave.geteid(), &mut retval, &mut pub_key)
+    };
+    match result {
+        sgx_status_t::SGX_SUCCESS => {
+            println!("[+] Key pair successfully generated inside enclave!");
+            println!("[+] {:?}", pub_key);
+            // println!("[+] Secret key encrypted maybe? {:?}", sealed_log)
+        },
+        _ => {
+            println!("[-] ECALL to enclave failed {}!", result.as_str());
+            return;
+        }
+    };
 
 
 
 
     let mut sealed_log_size: u32 = 1024;
 	let mut sealed_log = [0u8;1024];
+    let raw_ptr = sealed_log[0] as *mut u8;
 
-    println!("Sealed log before: {:?}", &sealed_log[..]);
+
+    println!("Sealed log before failure: {:?}", &sealed_log[..]);
 
     let result2 = unsafe {
-        create_sealeddata(enclave.geteid(), &mut retval, &mut sealed_log[0], &mut sealed_log_size as *const u32)
+        // create_sealeddata(enclave.geteid(), &mut retval, raw_ptr, &mut sealed_log_size as *const u32) // holy shit this worked!
+        create_sealeddata(enclave.geteid(), &mut retval, sealed_log[0] as *mut u8, sealed_log_size as *const u32) // holy shit this worked too!
     };
 
     match result2 {

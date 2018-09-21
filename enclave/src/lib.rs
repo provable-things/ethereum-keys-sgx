@@ -40,6 +40,7 @@ pub extern "C" fn generate_keypair(
     // log_size: *const u32
 ) -> sgx_status_t {
 
+    println!("Do we even see stuff from inside the enc?");
     let keypair = match keygen::KeyPair::new() {
         Ok(kp) => *pub_key_ptr = kp.public,
         Err(_) => {return sgx_status_t::SGX_ERROR_UNEXPECTED;}
@@ -85,33 +86,35 @@ unsafe impl ContiguousMemory for RandData {}
 #[no_mangle]
 pub extern "C" fn create_sealeddata(sealed_log: * mut u8, sealed_log_size: u32) -> sgx_status_t {
 
-    // let mut data = RandData::default();
-    // data.key = 0x1234;
+    let mut data = RandData::default();
+    data.key = 0x1234;
 
-    // let mut rand = match StdRng::new() {
-    //     Ok(rng) => rng,
-    //     Err(_) => { return sgx_status_t::SGX_ERROR_UNEXPECTED; },
-    // };
-    // rand.fill_bytes(&mut data.rand);
+    let mut rand = match StdRng::new() {
+        Ok(rng) => rng,
+        Err(_) => { return sgx_status_t::SGX_ERROR_UNEXPECTED; },
+    };
+    rand.fill_bytes(&mut data.rand);
     
-    // let aad: [u8; 0] = [0_u8; 0];
-    // let result = SgxSealedData::<RandData>::seal_data(&aad, &data);
+    println!("How about here?");
 
-    // println!("Do we reach here?");
+    let aad: [u8; 0] = [0_u8; 0];
+    let result = SgxSealedData::<RandData>::seal_data(&aad, &data);
 
-    // let sealed_data = match result {
-    //     Ok(x) => x,
-    //     Err(ret) => { return ret; }, 
-    // };
+    println!("Do we reach here?");
 
-    // println!("Do we reach here?");
+    let sealed_data = match result {
+        Ok(x) => x,
+        Err(ret) => { return ret; }, 
+    };
 
-    // let opt = to_sealed_log(&sealed_data, sealed_log, sealed_log_size);
-    // if opt.is_none() {
-    //     return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;
-    // }
+    println!("Or here?");
+
+    let opt = to_sealed_log(&sealed_data, sealed_log, sealed_log_size);
+    if opt.is_none() {
+        return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;
+    }
     
-    // println!("Here is some data: {:?}", data);
+    println!("Here is some data: {:?}", data);
     
     sgx_status_t::SGX_SUCCESS
 }
