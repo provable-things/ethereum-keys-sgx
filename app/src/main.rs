@@ -51,8 +51,16 @@ extern {
     fn create_sealeddata(
         eid: sgx_enclave_id_t, 
         retval: *mut sgx_status_t, 
-        // sealed_log: *mut u8, 
-        sealed_log: *mut sgx_sealed_data_t,
+        // sealed_log: *mut sgx_sealed_data_t,
+        sealed_log: *mut u8,
+        sealed_log_size: *const u32
+    ) -> sgx_status_t;
+
+    fn verify_sealeddata(
+        eid: sgx_enclave_id_t, 
+        retval: *mut sgx_status_t, 
+        // sealed_log: *mut sgx_sealed_data_t,
+        sealed_log: *mut u8,
         sealed_log_size: *const u32
     ) -> sgx_status_t;
 }
@@ -183,13 +191,19 @@ fn main() {
     let x = std::mem::size_of::<sgx_sealed_data_t>();
     println!("Size of the empty struct {}", x);
 
-    let mut sealed_log_size: u32 = 1024;
-    let mut thingy = sgx_sealed_data_t::default();
+    let mut sealed_log_size: usize = x + 16;//x + 16;
+    // let mut thingy = sgx_sealed_data_t::default();
+    let mut thingy = vec![0u8; sealed_log_size];//vec![0u8]; <- core dumps!
+    // let mut thingy = [0u8;576];
+    let ptr: *mut u8 = &mut thingy[0];
+
+    println!("vec before: {:?}", &thingy[..]);
     
     let result2 = unsafe {
-        // create_sealeddata(enclave.geteid(), &mut retval, raw_ptr, &mut sealed_log_size as *const u32) // holy shit this worked!
-        // create_sealeddata(enclave.geteid(), &mut retval, sealed_log[0] as *mut u8, sealed_log_size as *const u32) // holy shit this worked too!
-        create_sealeddata(enclave.geteid(), &mut retval, &mut thingy, sealed_log_size as *const u32) // holy shit this worked too!
+        // create_sealeddata(enclave.geteid(), &mut retval, raw_ptr, &mut sealed_log_size as *const u32)
+        // create_sealeddata(enclave.geteid(), &mut retval, sealed_log[0] as *mut u8, sealed_log_size as *const u32)
+        // create_sealeddata(enclave.geteid(), &mut retval, &mut thingy[0], sealed_log_size as *const u32) 
+        create_sealeddata(enclave.geteid(), &mut retval, ptr, sealed_log_size as *const u32)
     };
 
     match result2 {
@@ -201,6 +215,27 @@ fn main() {
             return;
         }
     };
+
+    println!("vec after: {:?}", &thingy[..]);
+    // let deref: &sgx_sealed_data_t = &(*ptr as sgx_sealed_data_t);
+
+
+
+    let result3 = unsafe {
+        verify_sealeddata(enclave.geteid(), &mut retval, &mut thingy[0], sealed_log_size as *const u32)
+    };
+
+    match result3 {
+        sgx_status_t::SGX_SUCCESS => {
+            println!("[+] verify_sealeddata function call was successful! It returned: {}", result3.as_str());
+        },
+        _ => {
+            println!("[-] ECALL to enclave failed! {}", result3.as_str());
+            return;
+        }
+    };
+
+
     
     enclave.destroy();
 }
