@@ -51,6 +51,8 @@ extern {
     ) -> sgx_status_t;
 
     fn create_sealeddata(
+        eid: sgx_enclave_id_t, 
+        retval: *mut sgx_status_t, 
         sealed_log: *mut u8, 
         sealed_log_size: *const u32
     ) -> sgx_status_t;
@@ -124,7 +126,6 @@ fn init_enclave() -> SgxResult<SgxEnclave> {
     Ok(enclave)
 }
 /*
- *
  * TODO: Get sealing to work with the PK!
  * TODO: Have the first call the enc. do an ::new, which spits out the PublicKey
  * and a sealed privkey.
@@ -164,20 +165,45 @@ fn main() {
     // }
 
     let mut retval = sgx_status_t::SGX_SUCCESS;
-    let mut pub_key = PublicKey::new();
-    let result = unsafe {
-        generate_keypair(enclave.geteid(), &mut retval, &mut pub_key)
+    // let mut pub_key = PublicKey::new();
+    // let result = unsafe {
+    //     generate_keypair(enclave.geteid(), &mut retval, &mut pub_key)
+    // };
+    // match result {
+    //     sgx_status_t::SGX_SUCCESS => {
+    //         println!("[+] Key pair successfully generated inside enclave!");
+    //         println!("[+] {:?}", pub_key);
+    //         // println!("[+] Secret key encrypted maybe? {:?}", sealed_log)
+    //     },
+    //     _ => {
+    //         println!("[-] ECALL to enclave failed {}!", result.as_str());
+    //         return;
+    //     }
+    // };
+
+
+
+
+    let mut sealed_log_size: u32 = 1024;
+	let mut sealed_log = [0u8;1024];
+
+    println!("Sealed log before: {:?}", &sealed_log[..]);
+
+    let result2 = unsafe {
+        create_sealeddata(enclave.geteid(), &mut retval, &mut sealed_log[0], &mut sealed_log_size as *const u32)
     };
-    match result {
+
+    match result2 {
         sgx_status_t::SGX_SUCCESS => {
-            println!("[+] Key pair successfully generated inside enclave!");
-            println!("[+] {:?}", pub_key);
-            // println!("[+] Secret key encrypyed maybe? {:?}", sealed_log)
+            println!("[+] create_sealeddata function call was successful!");
         },
         _ => {
-            println!("[-] ECALL Enclave Failed {}!", result.as_str());
+            println!("[-] ECALL to enclave failed! {}", result2.as_str());
             return;
         }
-    }
+    };
+
+    println!("Sealed log after: {:?}", &sealed_log[..]);
+    
     enclave.destroy();
 }

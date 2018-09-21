@@ -161,14 +161,6 @@ $(Signed_RustEnclave_Name): $(RustEnclave_Name)
 enclave:
 	$(MAKE) -C ./enclave/
 
-# .PHONY: compiler-rt
-# compiler-rt:
-# 	$(MAKE) -C ../../compiler-rt/ 2> /dev/null
-
-# .PHONY: sgx_ustdc
-# sgx_ustdc:
-# 	$(MAKE) -C ../../sgx_ustdc/ 2> /dev/null
-	
 .PHONY: clean
 clean:
 	@rm -f $(App_Name) $(RustEnclave_Name) $(Signed_RustEnclave_Name) enclave/*_t.* app/*_u.* lib/*.a

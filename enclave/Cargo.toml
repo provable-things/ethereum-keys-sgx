@@ -17,3 +17,10 @@ sgx_tcrypto = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_tseal = { git = "https://github.com/baidu/rust-sgx-sdk" }
 secp256k1-sgx = { git = "https://github.com/bl4ck5un/rust-secp256k1-sgx", features=["rand"] }
 
+# Following cause duplicate import conflicts alas
+# sgx_tstd = { path = "../../../sgx_tstd", features = ["backtrace"] }
+# sgx_types = { path = "../../../sgx_types" }
+# sgx_rand = { path = "../../../sgx_rand" }
+# sgx_tcrypto = { path = "../../../sgx_tcrypto" }
+# sgx_tseal = { path = "../../../sgx_tseal" }
+# secp256k1-sgx = { path = "../../../rust-secp256k1-sgx", features=["rand"] }
