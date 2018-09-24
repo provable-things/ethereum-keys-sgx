@@ -11,14 +11,11 @@ extern crate sgx_tcrypto;
 extern crate sgx_tstd as std;
 
 mod keygen;
-use std::str;
 use std::slice;
 use sgx_types::*;
+use key::PublicKey;
 use keygen::KeyPair;
-use sgx_rand::{Rng, StdRng};
 use sgx_tseal::SgxSealedData;
-use key::{SecretKey, PublicKey};
-use secp256k1::Error as SecpError;
 use sgx_types::marker::ContiguousMemory;
 use secp256k1::{Secp256k1, Message, key};
 /*

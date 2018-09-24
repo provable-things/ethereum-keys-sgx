@@ -1,5 +1,6 @@
-use sgx_types::*;
-use secp256k1::key::{PublicKey, SecretKey};
+#![allow(improper_ctypes)]
+use secp256k1::key::PublicKey;
+use sgx_types::{sgx_enclave_id_t, sgx_status_t};
 
 extern {
     pub fn generate_keypair(

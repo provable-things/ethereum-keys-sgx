@@ -1,9 +1,10 @@
-use std::{fs, path};
+use std::fs;
 use tiny_keccak::Keccak;
 use secp256k1::key::{PublicKey, SecretKey};
 
 //TODO: Sort this stuff into correct places once it compiles
 
+#[allow(dead_code)] // We only use the struct to measure it's size for enc. copying.
 pub struct KeyPair {
     public: PublicKey,
     secret: SecretKey

@@ -1,12 +1,7 @@
-use std::fs;
-use std::path;
 use sgx_types::*;
 use std::mem::size_of;
-use tiny_keccak::Keccak;
-use sgx_urts::SgxEnclave;
-use std::io::{Read, Write};
+use secp256k1::key::PublicKey;
 use init_enclave::init_enclave;
-use secp256k1::key::{PublicKey, SecretKey};
 use enclave_api::{generate_keypair, sign_message};
 use utils::{KeyPair, read_file_as_vec, write_file, hash_message};
 
@@ -25,7 +20,7 @@ pub fn dothing() {
     let mut pub_key = PublicKey::new();
     let sgx_struct_size = size_of::<sgx_sealed_data_t>();
     let alloc_size = size_of::<KeyPair>();
-    let mut sealed_log_size: usize = alloc_size + sgx_struct_size;
+    let sealed_log_size: usize = alloc_size + sgx_struct_size;
     let mut seal_alloc = vec![0u8; sealed_log_size];
     let ptr: *mut u8 = &mut seal_alloc[0];
     let result = unsafe {
