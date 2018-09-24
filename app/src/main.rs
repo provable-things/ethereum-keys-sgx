@@ -1,5 +1,5 @@
 extern crate secp256k1_enclave_rust;
-use secp256k1_enclave_rust::dothing::dothing;
+use secp256k1_enclave_rust::dothing::run;
 /*
  *
  * TODO: Make into CLI with docopt - init to create new key (can only do once? Store state?)
@@ -9,5 +9,5 @@ use secp256k1_enclave_rust::dothing::dothing;
  * 
  **/
 fn main() {
-   dothing();
+   run();
 }

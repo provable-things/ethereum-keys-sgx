@@ -37,7 +37,6 @@ static ENCLAVE_FILE: &'static str = "enclave.signed.so";
 static ENCLAVE_TOKEN: &'static str = "enclave.token";
 
 pub fn init_enclave() -> SgxResult<SgxEnclave> {
-
     let mut launch_token: sgx_launch_token_t = [0; 1024];
     let mut launch_token_updated: i32 = 0;
     // Step 1: try to retrieve the launch token saved by last transaction
@@ -56,7 +55,6 @@ pub fn init_enclave() -> SgxResult<SgxEnclave> {
             false
         }
     };
-
     let token_file: path::PathBuf = home_dir.join(ENCLAVE_TOKEN);;
     if use_token == true {
         match fs::File::open(&token_file) {
@@ -74,7 +72,6 @@ pub fn init_enclave() -> SgxResult<SgxEnclave> {
             }
         }
     }
-
     // Step 2: call sgx_create_enclave to initialize an enclave instance
     // Debug Support: set 2nd parameter to 1
     let debug = 1;
@@ -100,6 +97,5 @@ pub fn init_enclave() -> SgxResult<SgxEnclave> {
             },
         }
     }
-
     Ok(enclave)
 }

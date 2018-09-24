@@ -1,11 +1,13 @@
 use sgx_types::*;
+use utils::KeyPair;
 use std::mem::size_of;
+use keccak::hash_message;
 use secp256k1::key::PublicKey;
 use init_enclave::init_enclave;
+use fs::{read_file_as_vec, write_file};
 use enclave_api::{generate_keypair, sign_message};
-use utils::{KeyPair, read_file_as_vec, write_file, hash_message};
 
-pub fn dothing() {
+pub fn run() {
     let enclave = match init_enclave() {
         Ok(r) => {
             println!("[+] [App] Enclave Initialised. ID: {}!", r.geteid());
@@ -30,7 +32,7 @@ pub fn dothing() {
         sgx_status_t::SGX_SUCCESS => {
             println!("[+] [App] Key pair successfully generated inside enclave");
             println!("[+] [App] Keypair successfully sealed outside of enclave");
-            println!("[+] [App] Retrievd from enclave: {:?}", pub_key);
+            println!("[+] [App] Retrieved from enclave: {:?}", pub_key);
         },
         _ => {
             println!("[-] [App] ECALL to enclave failed {}!", result.as_str());
