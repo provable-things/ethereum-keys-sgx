@@ -1,0 +1,11 @@
+[package]
+name = "secp256k1_enclave_rust"
+version = "0.1.0"
+authors = ["gregkapka <greg@oraclize.it>"]
+
+[dependencies]
+dirs = "1.0.2"
+tiny-keccak = "1.4"
+sgx_urts = { git = "https://github.com/baidu/rust-sgx-sdk" }
+sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
+eth-secp256k1 = { git = "https://github.com/paritytech/rust-secp256k1" }
