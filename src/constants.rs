@@ -1,0 +1,1 @@
+static DEFAULT_KEYPAIR_PATH: &'static str = "./encrypted_keypair.txt";
