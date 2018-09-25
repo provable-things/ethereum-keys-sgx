@@ -7,6 +7,11 @@ use init_enclave::init_enclave;
 use fs::{read_file_as_vec, write_file};
 use enclave_api::{generate_keypair, sign_message};
 
+// TODO: pull out the multiple repeatedlogic with the returns
+// TODO: Separate error handling fully
+// TODO: See if this file can be separated like a lib crate too to factor out functions etc.
+// Copy signature out from enc. to front end.
+
 pub fn run() {
     let enclave = match init_enclave() {
         Ok(r) => {
