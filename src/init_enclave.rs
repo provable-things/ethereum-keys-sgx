@@ -33,8 +33,8 @@ use sgx_types::*;
 use sgx_urts::SgxEnclave;
 use std::io::{Read, Write};
 
-static ENCLAVE_FILE: &'static str = "enclave.signed.so";
 static ENCLAVE_TOKEN: &'static str = "enclave.token";
+static ENCLAVE_FILE: &'static str = "enclave.signed.so";
 
 pub fn init_enclave() -> SgxResult<SgxEnclave> {
     let mut launch_token: sgx_launch_token_t = [0; 1024];

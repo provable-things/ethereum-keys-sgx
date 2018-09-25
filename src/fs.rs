@@ -1,9 +1,11 @@
 use std::fs;
+use std::io::Error;
+// use error::Error as AppError;
 
-pub fn write_file(path: &String, data: &Vec<u8>) {
-    fs::write(path, data).expect("Unable to write file!")  // FIXME: Return a result to handle
+pub fn write_file(path: &String, data: &Vec<u8>) -> Result<(), Error> {
+    fs::write(path, data)
 }
 
-pub fn read_file_as_vec(path: &String) -> Vec<u8> {
-    fs::read(path).expect("Unable to read file") // FIXME: Return a result to handle
+pub fn read_file_as_vec(path: &String) -> Result<Vec<u8>, Error> {
+    fs::read(path)
 }

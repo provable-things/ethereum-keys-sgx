@@ -6,6 +6,7 @@ extern crate tiny_keccak;
 
 pub mod fs;
 pub mod utils;
+pub mod error;
 pub mod keccak;
 pub mod dothing;
 pub mod enclave_api;
