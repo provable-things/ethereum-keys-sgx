@@ -1,8 +1,8 @@
 use sgx_types::*;
 use utils::KeyPair;
 use std::mem::size_of;
-use error as AppError;
 use keccak::hash_message;
+use error::AppError;
 use secp256k1::key::PublicKey;
 use init_enclave::init_enclave;
 use fs::{read_file_as_vec, write_file};
@@ -102,9 +102,9 @@ pub fn run() {
 //     seal_alloc
 // }
 
-// pub fn save_keypair(data: Vec<u8>) -> Result<(), AppError> {
-//     write_file(DEFAULT_KEYPAIR_PATH, &data)
-// }
+pub fn save_keypair(data: Vec<u8>) -> Result<(), AppError> {
+    write_file(DEFAULT_KEYPAIR_PATH, &data)
+}
 
 // // pub fn init_enclave() -> SgxResult<SgxEnclave> {
 // //     let enclave = match init_enclave() {

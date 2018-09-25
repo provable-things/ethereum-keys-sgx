@@ -1,11 +1,13 @@
 use std::fs;
-use std::io::Error;
-// use error::Error as AppError;
+use std::result;
+use error::AppError;
 
-pub fn write_file(path: &String, data: &Vec<u8>) -> Result<(), Error> {
-    fs::write(path, data)
+type Result<T> = result::Result<T, AppError>;
+
+pub fn write_file(path: &str, data: &Vec<u8>) -> Result<()> {
+    Ok(fs::write(path, data)?)
 }
 
-pub fn read_file_as_vec(path: &String) -> Result<Vec<u8>, Error> {
-    fs::read(path)
+pub fn read_file_as_vec(path: &String) -> Result<Vec<u8>> {
+    Ok(fs::read(path)?)
 }
