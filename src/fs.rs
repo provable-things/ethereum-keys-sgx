@@ -1,10 +1,11 @@
 use std::fs;
 use std::result;
 use error::AppError;
+use types::EncryptedKeyPair;
 
 type Result<T> = result::Result<T, AppError>;
 
-pub fn write_file(path: &str, data: &Vec<u8>) -> Result<()> {
+pub fn write_keyfile(path: &str, data: &EncryptedKeyPair) -> Result<()> {
     Ok(fs::write(path, data)?)
 }
 

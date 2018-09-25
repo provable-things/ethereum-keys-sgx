@@ -30,13 +30,13 @@ use secp256k1::{Secp256k1, Message, key};
  **/
 #[no_mangle]
 pub extern "C" fn generate_keypair(
-    pub_key_ptr: &mut PublicKey, 
+    // pub_key_ptr: &mut PublicKey, 
     sealed_log: * mut u8, 
     sealed_log_size: u32
 ) -> sgx_status_t {
     let keypair = match KeyPair::new() {
         Ok(kp) => {
-            *pub_key_ptr = kp.public;
+            // *pub_key_ptr = kp.public;
             kp
         },
         Err(_) => {return sgx_status_t::SGX_ERROR_UNEXPECTED;}

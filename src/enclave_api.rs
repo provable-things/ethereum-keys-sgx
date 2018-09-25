@@ -6,7 +6,7 @@ extern {
     pub fn generate_keypair(
         eid: sgx_enclave_id_t, 
         retval: *mut sgx_status_t, 
-        pub_key: *mut PublicKey, 
+        // pub_key: *mut PublicKey, 
         sealed_log: *mut u8,
         sealed_log_size: *const u32
     ) -> sgx_status_t;

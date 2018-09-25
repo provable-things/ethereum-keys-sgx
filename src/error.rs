@@ -1,5 +1,5 @@
 use std::io;
-use std::{fmt, error};
+use std::fmt;
 use std::error::Error;
 use sgx_types::sgx_status_t;
 

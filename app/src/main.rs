@@ -1,5 +1,10 @@
 extern crate secp256k1_enclave_rust;
-use secp256k1_enclave_rust::dothing::run;
+
+use std::result;
+use secp256k1_enclave_rust::error::AppError;
+use secp256k1_enclave_rust::generate_keypair;
+
+type Result<T> = result::Result<T, AppError>;
 /*
  *
  * TODO: Make into CLI with docopt - init to create new key (can only do once? Store state?)
@@ -9,17 +14,13 @@ use secp256k1_enclave_rust::dothing::run;
  * TODO: Docopt logic desired: init (for a new key - have it check if one exists first, can force new?)
  * TODO: Have a way we can use a specific key if passed as an arg, and it'll attempt to find a file called that and decrpy it.
  * TODO: Have a way we can pass in a message and have it sign it. Hash the message outside as it currently does.
+ * 
+ * newkey/usekey/signmsg (either uses default key or you can pass a named key)
+ * 
  **/
 fn main() {
-   run();
+   match generate_keypair::run() {
+       Ok(_)  => println!("Yay!"),
+       Err(_) => println!("Boo!")
+   };
 }
-
-/*
-
-newkey
-
-usekey
-
-signmsg (either uses default key or you can pass a named key)
-
-*/
