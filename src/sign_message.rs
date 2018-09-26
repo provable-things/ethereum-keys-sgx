@@ -1,21 +1,20 @@
-// use keccak::hash_message;
 use std::result;
 use error::AppError;
 use keccak::hash_message;
 use sgx_urts::SgxEnclave;
 use sgx_types::sgx_status_t;
 use enclave_api::sign_message;
+use fs::read_encrypted_keyfile;
 use init_enclave::init_enclave;
-use fs::read_default_encrypted_keyfile;
 use types::{MessageSignature, EncryptedKeyPair, ENCRYPTED_KEYPAIR_SIZE};
 
 type Result<T> = result::Result<T, AppError>;
 
-pub fn run() -> Result<MessageSignature> {
-    sign_hashed_message(init_enclave()?, read_default_encrypted_keyfile()?, "Hello Oraclize!") // TODO: Eventually use argv and non-default if passed
+pub fn run(path: String) -> Result<MessageSignature> { // FIXME: Use a passed in message!
+    sign_hashed_message(read_encrypted_keyfile(&path)?, "Hello Oraclize!", init_enclave()?)
 }
 
-fn sign_hashed_message(enc: SgxEnclave, mut keypair: EncryptedKeyPair, msg: &str) -> Result<MessageSignature> {
+fn sign_hashed_message(mut keypair: EncryptedKeyPair, msg: &str, enc: SgxEnclave) -> Result<MessageSignature> {
     let mut signature: MessageSignature = [0u8;65];
     let result = unsafe {
         sign_message(

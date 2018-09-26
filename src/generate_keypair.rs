@@ -5,19 +5,18 @@ use fs::write_keyfile;
 use sgx_urts::SgxEnclave;
 use init_enclave::init_enclave;
 use enclave_api::generate_keypair;
-use constants::DEFAULT_KEYPAIR_PATH;
 use types::{EncryptedKeyPair, ENCRYPTED_KEYPAIR_SIZE};
 
 type Result<T> = result::Result<T, AppError>;
 
-pub fn run() -> Result<()> {
+pub fn run(path: &String) -> Result<()> {
     init_enclave()
         .and_then(get_encrypted_keypair)
-        .and_then(save_keypair)
+        .and_then(|kp| save_keypair(kp, &path))
 }
 
-fn save_keypair(data: EncryptedKeyPair) -> Result<()> {
-    Ok(write_keyfile(DEFAULT_KEYPAIR_PATH, &data)?)
+fn save_keypair(data: EncryptedKeyPair, path: &String) -> Result<()> {
+    Ok(write_keyfile(&path, &data)?)
 }
 
 fn get_encrypted_keypair(enc: SgxEnclave) -> Result<EncryptedKeyPair> { // TODO: check if path exists first, then env. args to act on that info.
