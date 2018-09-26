@@ -1,9 +1,12 @@
 extern crate docopt;
 extern crate secp256k1_enclave_rust;
 
-use docopt::Docopt;
+use docopt::{Docopt, ArgvMap};
 use std::io::{stdin, stdout, Write};
-use secp256k1_enclave_rust::{generate_keypair, get_public_key, sign_message};
+use secp256k1_enclave_rust::{generate_keypair, get_public_key, get_private_key, sign_message};
+
+pub static DEFAULT_KEYPAIR_PATH: &'static str = "./encrypted_keypair.txt";
+
 /*
  *
  * TODO: Have a way we can use a specific key if passed as an arg, and it'll attempt to find a file called that and decrpy it.
@@ -37,39 +40,44 @@ Commands:
 fn main() {
     Docopt::new(USAGE)
         .and_then(|dopt| dopt.parse())
-        .map(execute);
+        .map(execute); // FIXME: Unwrap this!
 }
 
-fn execute(args: docopt::ArgvMap) {
-    if args.get_bool("generate") { // TODO: Check exists!
+fn execute(args: ArgvMap) {
+    if args.get_bool("generate") { // TODO: Check key exists!
         match generate_keypair::run() {
-            Ok(_)  => println!("Yay!"),
-            Err(e) => println!("Error generating key set: {:?}", e)
+            Ok(_)  => println!("[+] Keypair successfully generated & saved to {}", DEFAULT_KEYPAIR_PATH),
+            Err(e) => println!("[-] Error generating keypair: {:?}", e)
         };
-    } else if args.get_bool("sign") {
-        println!("Asked to sign this message: {}", args.get_str("<message>"));
+    } else if args.get_bool("sign") { // TODO: Check key exists!
+        match sign_message::run() {//args.get_str("<message>")) {
+            Ok(k)  => println!("[+] Message signature: {:?}", &k[..]),
+            Err(e) => println!("[-] Error signing message: {:?}", e)
+        }
     } else if args.get_bool("show") && args.get_bool("public") {
-        println!("Asked to show public key");  
+        match get_public_key::run() {
+            Ok(k)  => println!("[+] {:?}", k),
+            Err(e) => println!("[-] Error retreiving plaintext public key: {:?}", e)
+        }
     } else if args.get_bool("show") && args.get_bool("secret") {
         let mut s = String::new();
-        print!("[!] Caution - you are about to log your private key to the console. Proceed? y/n\n");
+        print!("[!] WARNING - you are about to log your private key to the console! Proceed? y/n\n");
         let _=stdout().flush();
-        stdin().read_line(&mut s).expect("You did not enter a correct string");
+        stdin().read_line(&mut s).expect("[-] You did not enter a correct string");
         if s.trim() == "y" || s.trim() == "yes" {
-            println!("User asked to show private key");  
+            match get_private_key::run() {
+                Ok(k)  => println!("[+] {:?}", k),
+                Err(e) => println!("[-] Error retreiving plaintext private key: {:?}", e)
+            }
         } else {
             println!("[-] Incorrect input received, exiting. Goodbye!")
         }
-    }else {
+    } else {
         println!("{}", USAGE)
     }
-
-    // match get_public_key::run() {
-    //     Ok(k)  => println!("{:?}",k),
-    //     Err(e) => println!("Error getting public key: {:?}", e)
-    // }
-    // match sign_message::run() {
-    //     Ok(k)  => println!("Message signature: {:?}", &k[..]),
-    //     Err(e) => println!("Error signing message: {:?}", e)
-    // }
 }
+
+// fn generate(){}
+// fn sign(){}
+// fn show_pub(){}
+// fn show_priv(){}

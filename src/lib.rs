@@ -13,4 +13,5 @@ pub mod enclave_api;
 pub mod sign_message;
 pub mod init_enclave;
 pub mod get_public_key;
+pub mod get_private_key;
 pub mod generate_keypair;

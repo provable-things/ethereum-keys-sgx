@@ -17,6 +17,11 @@ enclave {
         [in, size=sealed_log_size] uint8_t *sealed_log,
         uint32_t sealed_log_size
       );
+
+      public sgx_status_t show_private_key(
+        [in, size=sealed_log_size] uint8_t *sealed_log,
+        uint32_t sealed_log_size
+      );
       
       public sgx_status_t sign_message(
         [in, size=sealed_log_size] uint8_t *sealed_log,
@@ -24,6 +29,5 @@ enclave {
         [in, count=32] uint8_t *hashed_message,
         [out, count=65] uint8_t *signature
       );
-      
     };
 };

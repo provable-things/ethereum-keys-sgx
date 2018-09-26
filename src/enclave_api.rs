@@ -26,4 +26,11 @@ extern {
         sealed_log: *mut u8,
         sealed_log_size: *const u32
     ) -> sgx_status_t;
+
+    pub fn show_private_key(
+        eid: sgx_enclave_id_t, 
+        retval: *mut sgx_status_t,
+        sealed_log: *mut u8,
+        sealed_log_size: *const u32
+    ) -> sgx_status_t;
 }

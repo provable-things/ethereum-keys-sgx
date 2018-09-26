@@ -13,8 +13,8 @@ extern crate sgx_tstd as std;
 mod keygen;
 use std::slice;
 use sgx_types::*;
-use key::PublicKey;
 use sgx_tseal::SgxSealedData;
+use key::{PublicKey, SecretKey};
 use keygen::{KeyPair, verify_pair};
 use sgx_types::marker::ContiguousMemory;
 use secp256k1::{Secp256k1, Message, key};
@@ -71,7 +71,32 @@ pub extern "C" fn get_public_key(
         *pub_key_ptr = keys.public;
         sgx_status_t::SGX_SUCCESS
     } else {
-        println!("Public key not derivable from secret in unencrypted key file!"); // FIXME: Handle errors better in the enc.
+        println!("[-] Public key not derivable from secret in unencrypted key file!"); // FIXME: Handle errors better in the enc.
+        sgx_status_t::SGX_ERROR_UNEXPECTED
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn show_private_key(
+    sealed_log: * mut u8, 
+    sealed_log_size: u32
+) -> sgx_status_t {
+    let opt = from_sealed_log::<KeyPair>(sealed_log, sealed_log_size);
+    let sealed_data = match opt {
+        Some(x) => x,
+        None => {return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;},
+    };
+    let result = sealed_data.unseal_data();
+    let unsealed_data = match result {
+        Ok(x) => x,
+        Err(ret) => {return ret;}, 
+    };
+    let keys: KeyPair = *unsealed_data.get_decrypt_txt();
+    if verify_pair(keys) {
+        println!("[+] {:?}", keys.secret); // *priv_key_ptr = keys.secret;
+        sgx_status_t::SGX_SUCCESS
+    } else {
+        println!("[-] Public key not derivable from secret in unencrypted key file!"); // FIXME: Handle errors better in the enc.
         sgx_status_t::SGX_ERROR_UNEXPECTED
     }
 }
