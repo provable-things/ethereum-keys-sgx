@@ -1,19 +1,14 @@
+extern crate serde;
 extern crate docopt;
+#[macro_use]
+extern crate serde_derive;
 extern crate secp256k1_enclave_rust;
 
-use std::process::exit;
-use docopt::{Docopt, ArgvMap};
+use docopt::Docopt;
 use std::io::{stdin, stdout, Write};
 use secp256k1_enclave_rust::{generate_keypair, get_public_key, get_private_key, sign_message};
 
 pub static DEFAULT_KEYPAIR_PATH: &'static str = "./encrypted_keypair.txt";
-
-/*
- *
- * TODO: Have a way we can use a specific key if passed as an arg, and it'll attempt to find a file called that and decrpy it.
- * TODO: Have a way we can pass in a message and have it sign it. Hash the message outside as it currently does.
- * 
- **/
 
 static USAGE: &'static str = "
 Intel SGX Ethereum Key Management CLI.
@@ -38,51 +33,69 @@ Commands:
                         uses default keypair if it exists.
 ";
 
-fn main() {
-    Docopt::new(USAGE)
-        .and_then(|dopt| dopt.parse())
-        .map(execute)
-        .unwrap_or_else(|_| {
-            println!("[-] Unexpected error when executing program - exiting.");
-            exit(1)
-        });
+#[derive(Debug, Deserialize)]
+struct Args {
+    cmd_sign: bool,
+    cmd_show: bool,
+    cmd_public: bool,
+    cmd_secret: bool,
+    cmd_generate: bool,
+    flag_keyfile: String
 }
 
-fn execute(args: ArgvMap) {
-    if args.get_bool("generate") { // TODO: Check key exists!
-        match generate_keypair::run() {
-            Ok(_)  => println!("[+] Keypair successfully generated & saved to {}", DEFAULT_KEYPAIR_PATH),
-            Err(e) => println!("[-] Error generating keypair: {:?}", e)
-        };
-    } else if args.get_bool("sign") { // TODO: Check key exists!
-        match sign_message::run() {//args.get_str("<message>")) {
-            Ok(k)  => println!("[+] Message signature: {:?}", &k[..]),
-            Err(e) => println!("[-] Error signing message: {:?}", e)
-        }
-    } else if args.get_bool("show") && args.get_bool("public") {
-        match get_public_key::run() {
-            Ok(k)  => println!("[+] {:?}", k),
-            Err(e) => println!("[-] Error retreiving plaintext public key: {:?}", e)
-        }
-    } else if args.get_bool("show") && args.get_bool("secret") {
-        let mut s = String::new();
-        print!("[!] WARNING - you are about to log your private key to the console! Proceed? y/n\n");
-        let _=stdout().flush();
-        stdin().read_line(&mut s).expect("[-] You did not enter a correct string");
-        if s.trim() == "y" || s.trim() == "yes" {
-            match get_private_key::run() {
-                Ok(_)  => (),
-                Err(e) => println!("[-] Error retreiving plaintext private key: {:?}", e)
+fn main() {
+    Docopt::new(USAGE)
+        .and_then(|d| d.deserialize())
+        .map(execute)
+        .unwrap_or_else(|e| e.exit());
+}
+
+fn execute(args: Args) -> () {
+    match args {
+        Args {cmd_generate: true, ..} => generate(),
+        Args {cmd_sign: true, ..} => sign(),
+        Args {cmd_show: true, ..} => {
+            match args {
+                Args {cmd_public: true, ..} => show_pub(),
+                Args {cmd_secret: true, ..} => show_priv(),
+                _ => println!("{}", USAGE)
             }
-        } else {
-            println!("[-] Affirmation not given, exiting.")
-        }
-    } else {
-        println!("{}", USAGE)
+        },
+        _ => println!("{}", USAGE)
+    };
+}
+
+fn generate() -> () {// TODO: Check key exists!
+    match generate_keypair::run() {
+        Ok(_)  => println!("[+] Keypair successfully generated & saved to {}", DEFAULT_KEYPAIR_PATH),
+        Err(e) => println!("[-] Error generating keypair: {:?}", e)
+    };
+}
+
+fn sign() -> () { // TODO: Check key exists! Pass in Message too!
+    match sign_message::run() {//args.get_str("<message>")) {
+        Ok(k)  => println!("[+] Message signature: {:?}", &k[..]),
+        Err(e) => println!("[-] Error signing message: {:?}", e)
     }
 }
 
-// fn generate(){}
-// fn sign(){}
-// fn show_pub(){}
-// fn show_priv(){}
+fn show_pub() -> () { // TODO: Take path as param TODO: Show as eth addr.
+    match get_public_key::run() {
+        Ok(k)  => println!("[+] {:?}", k),
+        Err(e) => println!("[-] Error retreiving plaintext public key: {:?}", e)
+    }
+}
+fn show_priv() -> () { //TODO: Take path as param
+    let mut s = String::new();
+    print!("[!] WARNING - you are about to log your private key to the console! Proceed? y/n\n");
+    let _=stdout().flush();
+    stdin().read_line(&mut s).expect("[-] You did not enter a correct string");
+    if s.trim() == "y" || s.trim() == "yes" {
+        match get_private_key::run() {
+            Ok(_)  => (),
+            Err(e) => println!("[-] Error retreiving plaintext private key: {:?}", e)
+        }
+    } else {
+        println!("[-] Affirmation not given, exiting.")
+    }
+}
