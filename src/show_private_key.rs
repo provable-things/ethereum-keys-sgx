@@ -9,7 +9,7 @@ use types::{ENCRYPTED_KEYPAIR_SIZE, EncryptedKeyPair};
 
 type Result<T> = result::Result<T, AppError>;
 
-pub fn run(path: String) -> Result<()> {
+pub fn run(path: &String) -> Result<()> {
     show_key_via_enc(read_encrypted_keyfile(&path)?, init_enclave()?)
 }
 

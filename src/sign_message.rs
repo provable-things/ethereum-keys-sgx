@@ -10,7 +10,7 @@ use types::{MessageSignature, EncryptedKeyPair, ENCRYPTED_KEYPAIR_SIZE};
 
 type Result<T> = result::Result<T, AppError>;
 
-pub fn run(path: String, message: String) -> Result<MessageSignature> {
+pub fn run(path: &String, message: String) -> Result<MessageSignature> {
     sign_hashed_message(read_encrypted_keyfile(&path)?, &message, init_enclave()?)
 }
 

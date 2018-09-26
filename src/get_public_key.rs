@@ -11,7 +11,7 @@ use types::{ENCRYPTED_KEYPAIR_SIZE, EncryptedKeyPair};
 
 type Result<T> = result::Result<T, AppError>;
 
-pub fn run(path: String) -> Result<PublicKey> {
+pub fn run(path: &String) -> Result<PublicKey> {
     get_key_from_enc(read_encrypted_keyfile(&path)?, init_enclave()?)
 }
 
