@@ -1,10 +1,6 @@
 extern crate secp256k1_enclave_rust;
 
-use std::result;
-use secp256k1_enclave_rust::error::AppError;
-use secp256k1_enclave_rust::generate_keypair;
-
-type Result<T> = result::Result<T, AppError>;
+use secp256k1_enclave_rust::{generate_keypair, get_public_key};
 /*
  *
  * TODO: Make into CLI with docopt - init to create new key (can only do once? Store state?)
@@ -19,8 +15,12 @@ type Result<T> = result::Result<T, AppError>;
  * 
  **/
 fn main() {
-   match generate_keypair::run() {
-       Ok(_)  => println!("Yay!"),
-       Err(_) => println!("Boo!")
-   };
+    match generate_keypair::run() {
+        Ok(_)  => println!("Yay!"),
+        Err(e) => println!("Boo: {:?}", e)
+    };
+    match get_public_key::run() {
+        Ok(k)  => println!("{:?}",k),
+        Err(e) => println!("Boo getting public key: {:?}", e)
+    }
 }

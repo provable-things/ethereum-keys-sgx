@@ -9,7 +9,7 @@ use secp256k1::key::{SecretKey, PublicKey};
 #[derive(Copy, Clone, Debug)]
 pub struct KeyPair {
     pub public: PublicKey,
-    pub(crate) secret: SecretKey, // FIXME: Make private getter for it instead?
+    pub(crate) secret: SecretKey
 }
 
 unsafe impl ContiguousMemory for KeyPair{}
@@ -27,6 +27,10 @@ impl KeyPair {
         let p = get_public_key_from_secret(s);
         Ok(KeyPair{secret: s, public: p})
     }
+}
+
+pub fn verify_pair(keys: KeyPair) -> bool { // Note: Can't impl. since decryption loses methods on structs obvs.
+    keys.public == get_public_key_from_secret(keys.secret)
 }
 
 fn generate_random_priv_key() -> Result<SecretKey, SecpError> {

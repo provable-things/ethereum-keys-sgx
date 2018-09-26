@@ -1,0 +1,1 @@
+pub fn unsafe_get_priv_key() {}

@@ -13,6 +13,12 @@ enclave {
           uint32_t sealed_log_size
         );
 
+        public sgx_status_t get_public_key(
+          [out, count=64] uint8_t *pub_key,
+          [in, size=sealed_log_size] uint8_t *sealed_log,
+          uint32_t sealed_log_size
+        );
+
         public sgx_status_t sign_message(
           [in, size=sealed_log_size] uint8_t *sealed_log,
           uint32_t sealed_log_size,

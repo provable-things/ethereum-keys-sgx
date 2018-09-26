@@ -27,16 +27,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use dirs;
-use std::fs;
-use std::path;
 use sgx_types::*;
+use error::AppError;
 use sgx_urts::SgxEnclave;
 use std::io::{Read, Write};
+use std::{fs, path, result};
+use constants::{ENCLAVE_TOKEN, ENCLAVE_FILE};
 
-static ENCLAVE_TOKEN: &'static str = "enclave.token";
-static ENCLAVE_FILE: &'static str = "enclave.signed.so";
+pub fn init_enclave() -> result::Result<SgxEnclave, AppError> {
+    Ok(initialize()?)
+}
 
-pub fn init_enclave() -> SgxResult<SgxEnclave> {
+fn initialize() -> SgxResult<SgxEnclave> {
     let mut launch_token: sgx_launch_token_t = [0; 1024];
     let mut launch_token_updated: i32 = 0;
     // Step 1: try to retrieve the launch token saved by last transaction

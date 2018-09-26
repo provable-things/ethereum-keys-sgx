@@ -6,7 +6,6 @@ extern {
     pub fn generate_keypair(
         eid: sgx_enclave_id_t, 
         retval: *mut sgx_status_t, 
-        // pub_key: *mut PublicKey, 
         sealed_log: *mut u8,
         sealed_log_size: *const u32
     ) -> sgx_status_t;
@@ -17,5 +16,13 @@ extern {
         sealed_log: *mut u8,
         sealed_log_size: *const u32,
         hashed_message: *mut u8
+    ) -> sgx_status_t;
+
+    pub fn get_public_key(
+        eid: sgx_enclave_id_t, 
+        retval: *mut sgx_status_t,
+        pub_key: *mut PublicKey, 
+        sealed_log: *mut u8,
+        sealed_log_size: *const u32
     ) -> sgx_status_t;
 }

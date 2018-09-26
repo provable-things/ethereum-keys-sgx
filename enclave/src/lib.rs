@@ -14,8 +14,8 @@ mod keygen;
 use std::slice;
 use sgx_types::*;
 use key::PublicKey;
-use keygen::KeyPair;
 use sgx_tseal::SgxSealedData;
+use keygen::{KeyPair, verify_pair};
 use sgx_types::marker::ContiguousMemory;
 use secp256k1::{Secp256k1, Message, key};
 /*
@@ -30,15 +30,11 @@ use secp256k1::{Secp256k1, Message, key};
  **/
 #[no_mangle]
 pub extern "C" fn generate_keypair(
-    // pub_key_ptr: &mut PublicKey, 
     sealed_log: * mut u8, 
     sealed_log_size: u32
 ) -> sgx_status_t {
     let keypair = match KeyPair::new() {
-        Ok(kp) => {
-            // *pub_key_ptr = kp.public;
-            kp
-        },
+        Ok(kp) => kp,
         Err(_) => {return sgx_status_t::SGX_ERROR_UNEXPECTED;}
     };
     let aad: [u8; 0] = [0_u8; 0]; // Empty additional data...
@@ -51,6 +47,32 @@ pub extern "C" fn generate_keypair(
         return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;
     };
     sgx_status_t::SGX_SUCCESS
+}
+
+#[no_mangle]
+pub extern "C" fn get_public_key(
+    pub_key_ptr: &mut PublicKey, 
+    sealed_log: * mut u8, 
+    sealed_log_size: u32
+) -> sgx_status_t {
+    let opt = from_sealed_log::<KeyPair>(sealed_log, sealed_log_size);
+    let sealed_data = match opt {
+        Some(x) => x,
+        None => {return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;},
+    };
+    let result = sealed_data.unseal_data();
+    let unsealed_data = match result {
+        Ok(x) => x,
+        Err(ret) => {return ret;}, 
+    };
+    let keys: KeyPair = *unsealed_data.get_decrypt_txt();
+    if verify_pair(keys) {
+        *pub_key_ptr = keys.public;
+        sgx_status_t::SGX_SUCCESS
+    } else {
+        println!("Public key not derivable from secret in unencrypted key file!"); // FIXME: Handle errors better in the enc.
+        sgx_status_t::SGX_ERROR_UNEXPECTED
+    }
 }
 
 #[no_mangle]
@@ -80,7 +102,7 @@ pub extern "C" fn sign_message(
     sgx_status_t::SGX_SUCCESS
 }
 
-pub fn sign_message_hash(hashed_msg: [u8;32], keyset: &KeyPair) -> [u8;65] {//Result<[u8;65], SecpError> {
+pub fn sign_message_hash(hashed_msg: [u8;32], keyset: &KeyPair) -> [u8;65] {
     let message = Message::from_slice(&hashed_msg).expect("32 bytes");
     let secp_context = Secp256k1::new();
     let sig = secp_context.sign_recoverable(&message, &keyset.secret);

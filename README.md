@@ -24,7 +24,7 @@ _**`❍ sgx-nuc-docker@~# rustup component add rust-src`**_
 _REAL MODE ONLY:_ 
 _**`❍ sgx-nuc-docker@~# /opt/intel/sgxpsw/aesm/aesm_service &`**_
 
-Then in the `~/sgx/samplecode/secp256k1-enclave-rust` inside the docker, first ensure the desired mode is set correctly inside the `Makefile`.  Next, set the environment veriable inside the docker to the desired mode:
+Then in the `~/sgx/samplecode/secp256k1-enclave-rust` inside the docker, first ensure the desired mode is set correctly inside the `Makefile`.  Next, set the environment variable inside the docker to the desired mode:
 
 _**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# export SGX_MODE=HW`**_
 

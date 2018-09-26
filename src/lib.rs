@@ -11,4 +11,5 @@ pub mod keccak;
 pub mod constants;
 pub mod enclave_api;
 pub mod init_enclave;
+pub mod get_public_key;
 pub mod generate_keypair;

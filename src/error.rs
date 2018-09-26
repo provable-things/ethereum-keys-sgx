@@ -1,21 +1,24 @@
 use std::io;
 use std::fmt;
+use secp256k1;
 use std::error::Error;
 use sgx_types::sgx_status_t;
 
 #[derive(Debug)]
 pub enum AppError {
-    SGXError(sgx_status_t),
 	Io(io::Error),
 	Custom(String),
+    SGXError(sgx_status_t),
+	Secp256k1Error(secp256k1::Error)
 }
 
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
-            AppError::SGXError(ref err) => format!("SGX Error: {}", err),
-            AppError::Io(ref err) => format!("I/O error: {}", err),
-            AppError::Custom(ref s) => s.clone()
+            AppError::Custom(ref msg) => msg.clone(),
+            AppError::Io(ref e) => format!("I/O error: {}", e),
+            AppError::SGXError(ref e) => format!("SGX Error: {}", e),
+            AppError::Secp256k1Error(ref e) => format!("Crypto Error: {}", e)
         };
         f.write_fmt(format_args!("{}", msg))
     }
@@ -43,4 +46,10 @@ impl From<sgx_status_t> for AppError {
     fn from(err: sgx_status_t) -> AppError {
         AppError::SGXError(err)
     }
+}
+
+impl From<secp256k1::Error> for AppError {
+	fn from(e: secp256k1::Error) -> AppError {
+        AppError::Secp256k1Error(e)
+	}
 }
