@@ -140,7 +140,7 @@ $(App_Name): $(App_Enclave_u_Object)
 	@cd app && SGX_SDK=$(SGX_SDK) cargo build $(App_Rust_Flags)
 	@echo "Cargo  =>  $@"
 	mkdir -p $(CUSTOM_BIN_PATH)
-	cp $(App_Rust_Path)/sgx-enclave-ec-keygen $(CUSTOM_BIN_PATH)
+	cp $(App_Rust_Path)/ethkeysgx $(CUSTOM_BIN_PATH)
 
 ######## Enclave Objects ########
 

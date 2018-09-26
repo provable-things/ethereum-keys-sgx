@@ -36,7 +36,7 @@ _**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# make`**_
 
 And finally run it:
 
-_**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# cd bin && ./sgx-enclave-ec-keygen`**_
+_**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# cd bin && ./ethkeysgx`**_
 
 Can also run make file targets separately when making changes to either app or enc. via:
 `make enclave` or `make app` etc.
