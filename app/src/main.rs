@@ -22,17 +22,17 @@ Usage:  ethkeysgx generate       [--keyfile=<path>]
         ethkeysgx [-h | --help]
 
 Options:
-    -h, --help          Show this usage message & quits.
-    --keyfile=<path>    Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+    -h, --help          ❍ Show this usage message & quits.
+    --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
 
 Commands:
-    generate            Generates an secp256k1 keypair inside an SGX enclave,
-                        encrypts them & saves to disk at either the given path or as
-                        encrypted_keypair.txt in the current directory.
-    show public         Log the public key from the encrypted keypair to the console.
-    show secret         Log the private key from the encrypted keypair to the console.
-    sign                Signs a passed in message using key pair provided, otherwise 
-                        uses default keypair if it exists.
+    generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
+                        them & saves to disk as either ./encrypted_keypair.txt in the
+                        current directory, or at the passed in path.
+    show public         ❍ Log the public key from the given encrypted keypair to the console.
+    show secret         ❍ Log the private key from the given encrypted keypair to the console.
+    sign                ❍ Signs a passed in message using key pair provided, otherwise 
+                       uses default keypair if it exists.
 ";
 
 #[derive(Debug, Deserialize)]
@@ -42,10 +42,12 @@ struct Args {
     cmd_public: bool,
     cmd_secret: bool,
     cmd_generate: bool,
+    arg_message: String,
     flag_keyfile: String
 }
 /*
  * TODO: Factor out this a bit since it's getting a bit unweildy.
+ * TODO: Add flag for showing secp pub key or eth address.
  * */
 fn main() {
     Docopt::new(USAGE)
@@ -57,7 +59,7 @@ fn main() {
 fn execute(args: Args) -> () {
     match args {
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
-        Args {cmd_sign: true, ..}     => sign(args.flag_keyfile),
+        Args {cmd_sign: true, ..}     => sign(args.flag_keyfile, args.arg_message),
         Args {cmd_show: true, ..}     => {
             match args {
                 Args {cmd_public: true, ..} => show_pub(args.flag_keyfile),
@@ -72,22 +74,28 @@ fn execute(args: Args) -> () {
 fn generate(path: String) -> () {
     if keyfile_exists(&path) {
         let mut s = String::new();
-        print!("[!] WARNING! Keyfile already exists at {} and will be overwritten. This cannot be undone. Overwrite? y/n\n", &path);
+        print!("[!] WARNING! Something already exists at {} and will be overwritten.\n[!] WARNING! This cannot be undone. Overwrite? y/n\n", &path);
         let _ = stdout().flush();
         stdin().read_line(&mut s).expect("[-] You did not enter a correct string");
         if s.trim() == "y" || s.trim() == "yes" {
-            match generate_keypair::run(&path) {
-                Ok(_)  => println!("[+] Keypair successfully generated & saved to {}", path),
-                Err(e) => println!("[-] Error generating keypair: {:?}", e)
-            };
+            create_keypair(&path)
         } else {
-            println!("[-] Affirmation not received, exiting.")
+            return println!("[-] Affirmation not received, exiting.");
         }
+    } else {
+        create_keypair(&path)
     }
 }
 
-fn sign(path: String) -> () { // TODO: Pass in Message too!
-    match sign_message::run(path) {
+fn create_keypair(path: &String) -> (){
+    match generate_keypair::run(&path) {
+        Ok(_)  => println!("[+] Keypair successfully generated & saved to {}", path),
+        Err(e) => println!("[-] Error generating keypair: {:?}", e)
+    };
+}
+
+fn sign(path: String, message: String) -> () { // TODO: Show pub key signed with!
+    match sign_message::run(path, message) {
         Ok(k)  => println!("[+] Message signature: {:?}", &k[..]),
         Err(e) => println!("[-] Error signing message: {:?}", e)
     }
@@ -99,6 +107,7 @@ fn show_pub(path: String) -> () { // TODO: Show as eth addr.
         Err(e) => println!("[-] Error retreiving plaintext public key: {:?}", e)
     }
 }
+
 fn show_priv(path: String) -> () {
     let mut s = String::new();
     print!("[!] WARNING! You are about to log your private key to the console! Proceed? y/n\n");

@@ -28,11 +28,11 @@ fn get_encrypted_keypair(enc: SgxEnclave) -> Result<EncryptedKeyPair> { // TODO:
     enc.destroy();
     match result {
         sgx_status_t::SGX_SUCCESS => {
-            println!("[+] [App] Key pair successfully generated inside enclave");
+            println!("[+] Key pair successfully generated inside enclave");
             Ok(encrypted_keys)
         },
         _ => {
-            println!("[-] [App] ECALL to enclave failed {}!", result.as_str());
+            println!("[-] ECALL to enclave failed {}!", result.as_str());
             Err(AppError::SGXError(result))
         }
     }
