@@ -23,9 +23,7 @@ fn get_key_from_enc(enc: SgxEnclave, mut keypair: EncryptedKeyPair) -> Result<Pu
     enc.destroy();
     match result {
         sgx_status_t::SGX_SUCCESS => Ok(pub_key),
-        _ => {
-            Err(AppError::SGXError(result))
-        }
+        _ => Err(AppError::SGXError(result))
     }
 }
 

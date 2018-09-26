@@ -1,1 +1,1 @@
-pub fn unsafe_get_priv_key() {}
+pub fn unsafe_get_priv_key() {} // TODO: Have an "are you sure y/n" prompt!

@@ -1,6 +1,6 @@
 extern crate secp256k1_enclave_rust;
 
-use secp256k1_enclave_rust::{generate_keypair, get_public_key};
+use secp256k1_enclave_rust::{generate_keypair, get_public_key, sign_message};
 /*
  *
  * TODO: Make into CLI with docopt - init to create new key (can only do once? Store state?)
@@ -15,12 +15,16 @@ use secp256k1_enclave_rust::{generate_keypair, get_public_key};
  * 
  **/
 fn main() {
-    match generate_keypair::run() {
-        Ok(_)  => println!("Yay!"),
-        Err(e) => println!("Boo: {:?}", e)
-    };
+    // match generate_keypair::run() {
+    //     Ok(_)  => println!("Yay!"),
+    //     Err(e) => println!("Error generating key set: {:?}", e)
+    // };
     match get_public_key::run() {
         Ok(k)  => println!("{:?}",k),
-        Err(e) => println!("Boo getting public key: {:?}", e)
+        Err(e) => println!("Error getting public key: {:?}", e)
+    }
+    match sign_message::run() {
+        Ok(k)  => println!("Message signature: {:?}", &k[..]),
+        Err(e) => println!("Error signing message: {:?}", e)
     }
 }
