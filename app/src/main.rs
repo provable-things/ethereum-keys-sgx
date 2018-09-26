@@ -1,6 +1,7 @@
 extern crate docopt;
 extern crate secp256k1_enclave_rust;
 
+use std::process::exit;
 use docopt::{Docopt, ArgvMap};
 use std::io::{stdin, stdout, Write};
 use secp256k1_enclave_rust::{generate_keypair, get_public_key, get_private_key, sign_message};
@@ -40,7 +41,11 @@ Commands:
 fn main() {
     Docopt::new(USAGE)
         .and_then(|dopt| dopt.parse())
-        .map(execute); // FIXME: Unwrap this!
+        .map(execute)
+        .unwrap_or_else(|_| {
+            println!("[-] Unexpected error when executing program - exiting.");
+            exit(1)
+        });
 }
 
 fn execute(args: ArgvMap) {
@@ -66,11 +71,11 @@ fn execute(args: ArgvMap) {
         stdin().read_line(&mut s).expect("[-] You did not enter a correct string");
         if s.trim() == "y" || s.trim() == "yes" {
             match get_private_key::run() {
-                Ok(k)  => println!("[+] {:?}", k),
+                Ok(_)  => (),
                 Err(e) => println!("[-] Error retreiving plaintext private key: {:?}", e)
             }
         } else {
-            println!("[-] Incorrect input received, exiting. Goodbye!")
+            println!("[-] Affirmation not given, exiting.")
         }
     } else {
         println!("{}", USAGE)

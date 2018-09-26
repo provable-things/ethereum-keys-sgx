@@ -1,6 +1,4 @@
-use std::fmt;
 use std::mem::size_of;
-use constants::SECRET_KEY_SIZE;
 use sgx_types::sgx_sealed_data_t;
 use secp256k1::key::{PublicKey, SecretKey};
 

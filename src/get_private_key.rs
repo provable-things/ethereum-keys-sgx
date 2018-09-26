@@ -1,13 +1,9 @@
-use get_public_key;
+use std::result;
 use error::AppError;
-use std::{result, slice};
 use sgx_urts::SgxEnclave;
 use sgx_types::sgx_status_t;
 use init_enclave::init_enclave;
-use constants::SECRET_KEY_SIZE;
-use secp256k1::{key, Secp256k1};
 use enclave_api::{show_private_key};
-use self::key::{PublicKey, SecretKey};
 use fs::read_default_encrypted_keyfile;
 use types::{ENCRYPTED_KEYPAIR_SIZE, EncryptedKeyPair};
 

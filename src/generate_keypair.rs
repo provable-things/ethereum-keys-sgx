@@ -4,11 +4,8 @@ use error::AppError;
 use fs::write_keyfile;
 use sgx_urts::SgxEnclave;
 use init_enclave::init_enclave;
-use secp256k1::{Secp256k1, key};
-// use sgx_rand::{Rng, thread_rng};
 use enclave_api::generate_keypair;
 use constants::DEFAULT_KEYPAIR_PATH;
-use self::key::{PublicKey, SecretKey};
 use types::{EncryptedKeyPair, ENCRYPTED_KEYPAIR_SIZE};
 
 type Result<T> = result::Result<T, AppError>;
