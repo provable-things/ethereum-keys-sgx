@@ -13,7 +13,8 @@ pub static DEFAULT_KEYPAIR_PATH: &'static str = "./encrypted_keypair.txt";
 
 static USAGE: &'static str = "
 Intel SGX Ethereum Key Management CLI.
-    Copyright 2018 Oraclize.it
+    Copyright: 2018 Oraclize.it
+    Questions: greg@oraclize.it
 
 Usage:  ethkeysgx generate       [--keyfile=<path>]
         ethkeysgx show public    [--keyfile=<path>]
@@ -49,6 +50,7 @@ struct Args {
 }
 /*
  * TODO: Factor this out a bit since it's getting a bit unweildy.
+ * TODO: How to tie a sealed thingy to a specific enclave?!
  * */
 fn main() {
     Docopt::new(USAGE)

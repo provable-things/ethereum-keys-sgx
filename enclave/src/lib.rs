@@ -13,8 +13,8 @@ extern crate sgx_tstd as std;
 mod keygen;
 use std::slice;
 use sgx_types::*;
+use key::PublicKey;
 use sgx_tseal::SgxSealedData;
-use key::{PublicKey, SecretKey};
 use keygen::{KeyPair, verify_pair};
 use sgx_types::marker::ContiguousMemory;
 use secp256k1::{Secp256k1, Message, key};
@@ -93,7 +93,7 @@ pub extern "C" fn show_private_key(
     };
     let keys: KeyPair = *unsealed_data.get_decrypt_txt();
     if verify_pair(keys) {
-        println!("[+] {:?}", keys.secret); // *priv_key_ptr = keys.secret;
+        println!("[+] {:?}", keys.secret);
         sgx_status_t::SGX_SUCCESS
     } else {
         println!("[-] Public key not derivable from secret in unencrypted key file!"); // FIXME: Handle errors better in the enc.
