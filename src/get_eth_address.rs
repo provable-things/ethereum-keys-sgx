@@ -9,13 +9,17 @@ type Result<T> = result::Result<T, AppError>;
 
 pub fn run(path: &String) -> Result<Vec<u8>> {
     get_public_key::run(&path.to_string())
-        .map(serialize)
+        .and_then(public_to_address)
+}
+
+pub fn public_to_address(public: PublicKey) -> Result<Vec<u8>> {
+    serialize(public)
         .map(hash)
         .map(truncate)
 }
 
-fn serialize(public: PublicKey) -> Vec<u8> {
-    public.serialize_vec(&Secp256k1::new(), false).to_vec()//[1..65]
+fn serialize(public: PublicKey) -> Result<Vec<u8>> {
+    Ok(public.serialize_vec(&Secp256k1::new(), false).to_vec())//[1..65]
 }
 
 fn hash(serialized_key: Vec<u8>) -> [u8;32] {

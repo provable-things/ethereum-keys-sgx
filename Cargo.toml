@@ -5,7 +5,11 @@ authors = ["gregkapka <greg@oraclize.it>"]
 
 [dependencies]
 dirs = "1.0.2"
+rustc-hex = "2.0.1"
 tiny-keccak = "1.4"
 sgx_urts = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
 eth-secp256k1 = { git = "https://github.com/paritytech/rust-secp256k1" }
+
+[target.'cfg(not(target_env = "sgx"))'.dependencies]
+# Can put sgx stuff here to stop conflicts maybe?

@@ -1,6 +1,7 @@
 use std::io;
 use std::fmt;
 use secp256k1;
+use rustc_hex;
 use std::error::Error;
 use sgx_types::sgx_status_t;
 
@@ -9,7 +10,8 @@ pub enum AppError {
 	Io(io::Error),
 	Custom(String),
     SGXError(sgx_status_t),
-	Secp256k1Error(secp256k1::Error)
+	Secp256k1Error(secp256k1::Error),
+    HexError(rustc_hex::FromHexError)
 }
 
 impl fmt::Display for AppError {
@@ -18,6 +20,7 @@ impl fmt::Display for AppError {
             AppError::Custom(ref msg) => msg.clone(),
             AppError::Io(ref e) => format!("I/O error: {}", e),
             AppError::SGXError(ref e) => format!("SGX Error: {}", e),
+            AppError::HexError(ref e) => format!("Hex error: {}", e),
             AppError::Secp256k1Error(ref e) => format!("Crypto Error: {}", e)
         };
         f.write_fmt(format_args!("{}", msg))
@@ -51,5 +54,11 @@ impl From<sgx_status_t> for AppError {
 impl From<secp256k1::Error> for AppError {
 	fn from(e: secp256k1::Error) -> AppError {
         AppError::Secp256k1Error(e)
+	}
+}
+
+impl From<rustc_hex::FromHexError> for AppError {
+	fn from(e: rustc_hex::FromHexError) -> AppError {
+        AppError::HexError(e)
 	}
 }

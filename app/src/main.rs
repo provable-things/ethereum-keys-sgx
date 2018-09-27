@@ -7,7 +7,8 @@ extern crate secp256k1_enclave_rust;
 use docopt::Docopt;
 use std::path::Path;
 use std::io::{stdin, stdout, Write};
-use secp256k1_enclave_rust::{generate_keypair, get_eth_address, get_public_key, show_private_key, sign_message};
+use secp256k1_enclave_rust::{generate_keypair, get_eth_address, get_public_key, show_private_key, sign_message, verify};
+
 
 pub static DEFAULT_KEYPAIR_PATH: &'static str = "./encrypted_keypair.txt";
 
@@ -58,6 +59,8 @@ struct Args {
  * TODO: Factor this out a bit since it's getting a bit unweildy.
  * TODO: How to tie a sealed thingy to a specific enclave?!
  * TODO: Add a flag for a non-prefixed sig type?
+ * TODO: Make it require the original message for verifcation, not the hash! 
+ * TODO: Add option to verify via the hash too?
  * */
 fn main() {
     Docopt::new(USAGE)
@@ -124,6 +127,7 @@ fn create_keypair(path: &String) -> (){
 fn sign(path: String, message: String) -> () { // TODO: Show pub key signed with! TODO: Take argv flag re prefix!
     match sign_message::run(&path, message) {
         Ok(k)  => {println!("[+] Message signature: ");print_hex(k.to_vec())},
+        // Ok(k)  => println!("[+] Message signature: {}", &k[..].to_hex()), // non-working
         Err(e) => println!("[-] Error signing message with key from {}:\n\t{:?}", &path, e)
     }
 }
@@ -142,8 +146,15 @@ fn show_addr(path: String) -> () { // TODO: Use eth types?
     }
 }
 
-fn verify(path: String, message: String, address: String) -> () {
-    println!("false"); // FIXME: Implement!
+fn verify(address: String, message: String, signature: String) -> () {
+    match verify::run(address, message, signature) {
+        Ok(b)  => {
+            // if b {println!("[+] Yay!")} else {println!("[!] Boo!!")}
+            print!("[+] Ethereum address recovered from signed message: ");
+            print_hex(b)
+        },
+        Err(e) => println!("[-] Error verifying signature: {}", e)
+    }
 }
 
 fn keyfile_exists(path: &String) -> bool {
