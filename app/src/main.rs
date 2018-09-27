@@ -2,10 +2,12 @@ extern crate serde;
 extern crate docopt;
 #[macro_use]
 extern crate serde_derive;
+extern crate ethereum_types;
 extern crate secp256k1_enclave_rust;
 
 use docopt::Docopt;
 use std::path::Path;
+use ethereum_types::Address;
 use std::io::{stdin, stdout, Write};
 use secp256k1_enclave_rust::{generate_keypair, get_eth_address, get_public_key, show_private_key, sign_message, verify};
 
@@ -59,7 +61,6 @@ struct Args {
  * TODO: Factor this out a bit since it's getting a bit unweildy.
  * TODO: How to tie a sealed thingy to a specific enclave?!
  * TODO: Add a flag for a non-prefixed sig type?
- * TODO: Make it require the original message for verifcation, not the hash! 
  * TODO: Add option to verify via the hash too?
  * */
 fn main() {
@@ -124,10 +125,9 @@ fn create_keypair(path: &String) -> (){
     };
 }
 
-fn sign(path: String, message: String) -> () { // TODO: Show pub key signed with! TODO: Take argv flag re prefix!
+fn sign(path: String, message: String) -> () { // TODO: Take argv flag re prefix!
     match sign_message::run(&path, message) {
         Ok(k)  => {println!("[+] Message signature: ");print_hex(k.to_vec())},
-        // Ok(k)  => println!("[+] Message signature: {}", &k[..].to_hex()), // non-working
         Err(e) => println!("[-] Error signing message with key from {}:\n\t{:?}", &path, e)
     }
 }
@@ -139,19 +139,17 @@ fn show_pub(path: String) -> () {
     }
 }
 
-fn show_addr(path: String) -> () { // TODO: Use eth types?
+fn show_addr(path: String) -> () {
     match get_eth_address::run(&path) {
-        Ok(k)  => {print!("[+] Ethereum Address: ");print_hex(k)},
+        Ok(a)  => println!("[+] Ethereum Address: {}", a),
         Err(e) => println!("[-] Error retreiving Ethereum Address from: {}:\n\t{:?}", &path, e)
     }
 }
 
 fn verify(address: String, message: String, signature: String) -> () {
     match verify::run(address, message, signature) {
-        Ok(b)  => {
-            // if b {println!("[+] Yay!")} else {println!("[!] Boo!!")}
-            print!("[+] Ethereum address recovered from signed message: ");
-            print_hex(b)
+        Ok(a)  => {
+            println!("[+] Ethereum Address: {}", a)
         },
         Err(e) => println!("[-] Error verifying signature: {}", e)
     }

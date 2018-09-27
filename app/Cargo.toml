@@ -8,4 +8,5 @@ build = "build.rs"
 serde = "1.0"
 docopt = "1.0.1"
 serde_derive = "1.0.79"
+ethereum-types = "0.4.0"
 secp256k1_enclave_rust = { path = "../" }

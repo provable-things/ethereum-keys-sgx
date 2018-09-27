@@ -7,6 +7,7 @@ authors = ["gregkapka <greg@oraclize.it>"]
 dirs = "1.0.2"
 rustc-hex = "2.0.1"
 tiny-keccak = "1.4"
+ethereum-types = "0.4.0"
 sgx_urts = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
 eth-secp256k1 = { git = "https://github.com/paritytech/rust-secp256k1" }

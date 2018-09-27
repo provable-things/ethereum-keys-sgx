@@ -4,6 +4,7 @@ extern crate rustc_hex;
 extern crate secp256k1;
 extern crate sgx_types;
 extern crate tiny_keccak;
+extern crate ethereum_types;
 
 
 pub mod fs;
