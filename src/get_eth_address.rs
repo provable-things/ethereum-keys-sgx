@@ -16,18 +16,18 @@ pub fn run(path: &String) -> Result<Address> {
 pub fn public_to_address(public: PublicKey) -> Result<Address> {
     serialize(public)
         .map(hash)
-        .map(convert_to_type)
+        .map(convert_to_address_type)
 }
 
 fn serialize(public: PublicKey) -> Result<Vec<u8>> {
-    Ok(public.serialize_vec(&Secp256k1::new(), false).to_vec())//[1..65]
+    Ok(public.serialize_vec(&Secp256k1::new(), false).to_vec())
 }
 
 fn hash(serialized_key: Vec<u8>) -> [u8;32] {
     serialized_key[1..65].keccak256()
 }
 
-fn convert_to_type(hashed_key: [u8;32]) -> Address { // TODO: Make more functional & less gross.
+fn convert_to_address_type(hashed_key: [u8;32]) -> Address { // TODO: Make more functional & less gross.
     let mut addr = Address::default();
     addr.copy_from_slice(&hashed_key[12..]);
     addr

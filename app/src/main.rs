@@ -74,7 +74,7 @@ fn execute(args: Args) -> () {
     match args {
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
         Args {cmd_sign: true, ..}     => sign(args.flag_keyfile, args.arg_message),
-        Args {cmd_verify: true, ..}   => verify(args.arg_address, args.arg_message, args.arg_signature),
+        Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().unwrap(), args.arg_message, args.arg_signature), // FIXME: Unwrap! Plus rm 0x?
         Args {cmd_show: true, ..}     => {
             match args {
                 Args {cmd_public: true, ..}  => show_pub(args.flag_keyfile),
@@ -146,10 +146,14 @@ fn show_addr(path: String) -> () {
     }
 }
 
-fn verify(address: String, message: String, signature: String) -> () {
+fn verify(address: &Address, message: String, signature: String) -> () {
     match verify::run(address, message, signature) {
-        Ok(a)  => {
-            println!("[+] Ethereum Address: {}", a)
+        Ok(b)  => {
+            if b {
+                println!("[+] Signature verified! Message was signed with Ethereum Address: {}", address)
+            } else {
+                println!("[!] Signature verification failed. Message was NOT signed with Ethereum Address: {}", address)
+            }
         },
         Err(e) => println!("[-] Error verifying signature: {}", e)
     }
