@@ -9,37 +9,69 @@ https://github.com/baidu/rust-sgx-sdk
 
 ## __:page_with_curl: Instructions:__
 
-_SIMULATION MODE:_
-_**`❍ sgx-nuc@~$ sudo docker run -v ~/oraclize/sgx/rust-sgx-sdk:/root/sgx -ti baiduxlab/sgx-rust`**_
+__❍ Pull requisite files:__
 
-_REAL MODE:_
-_**`❍ sgx-nuc@~$ sudo docker run -v ~/oraclize/sgx/rust-sgx-sdk:/root/sgx -ti --device /dev/isgx baiduxlab/sgx-rust`**_
+_Pull the Rust SGX SDK Docker image_
 
-Rebuild the tool chain too per instructions:
+_**`❍ sgx-nuc@~$ docker pull baiduxlab/sgx-rust`**_
+
+_Clone the Rust SGX SDK Repo_
+
+_**`❍ sgx-nuc@~$ git clone https://github.com/baidu/rust-sgx-sdk.git`**_
+
+&nbsp;
+
+_**❍ Prepare the Docker Container:**_
+
+If using __SIMULATION__ mode:
+
+_**`❍ sgx-nuc@~$ sudo docker run -v /path/to/sgx/sdk:/root/sgx -ti baiduxlab/sgx-rust`**_
+
+Else if using __HARDWARE__ mode:
+
+_**`❍ sgx-nuc@~$ sudo docker run -v /path/to/sgx/sdk:/root/sgx -ti --device /dev/isgx baiduxlab/sgx-rust`**_
+
+Rebuild the tool chain:
 
 _**`❍ sgx-nuc-docker@~# rustup default nightly-2018-08-25-x86_64-unknown-linux-gnu`**_
 
+Add required components:
+
 _**`❍ sgx-nuc-docker@~# rustup component add rust-src`**_
 
-_REAL MODE ONLY:_ 
+Finally, if using __HARDWARE__ mode, import the service:_
+
 _**`❍ sgx-nuc-docker@~# /opt/intel/sgxpsw/aesm/aesm_service &`**_
 
-Then in the `~/sgx/samplecode/secp256k1-enclave-rust` inside the docker, first ensure the desired mode is set correctly inside the `Makefile`.  Next, set the environment variable inside the docker to the desired mode:
+&nbsp;
+
+__❍ Prepare the keygen:__
+
+In the `~/sgx/samplecode/secp256k1-enclave-rust` inside the docker, first ensure the desired mode (__SW__ or __HW__) is set correctly inside the `Makefile`:
+
+```javascript
+    // ... Beginning of file ...
+
+    ######## SGX SDK Settings ########
+
+    SGX_SDK ?= /opt/intel/sgxsdk
+    SGX_MODE ?= SW                // <-- This option. HW for Hardware or SW for software.
+    SGX_ARCH ?= x64
+
+    // ... Remainder of file ...
+```
+
+Next, set the environment variable inside the docker to the desired mode:
 
 _**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# export SGX_MODE=HW`**_
 
 Then build the project:
 
-_**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# make clean`**_
-
 _**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# make`**_
 
-And finally run it:
+And finally run it to see the usage notes:
 
 _**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# cd bin && ./ethkeysgx`**_
-
-Can also run make file targets separately when making changes to either app or enc. via:
-`make enclave` or `make app` etc.
 
 &nbsp;
 
@@ -49,7 +81,11 @@ Can also run make file targets separately when making changes to either app or e
 
 :white_check_mark: Test on real nuc in HW mode.
 
-:black_square_button: Make CLI with Docopt.
+:white_check_mark: Make CLI with Docopt.
+
+:black_square_button: Remotely attest!
+
+:black_square_button: Use mister enclave instead of mister signer!
 
 :black_square_button: Abstract out generic enclave funcs (mem. allocing etc)
 

@@ -23,14 +23,14 @@ Usage:  ethkeysgx generate                                  [--keyfile=<path>]
         ethkeysgx show public                               [--keyfile=<path>]
         ethkeysgx show secret                               [--keyfile=<path>]
         ethkeysgx show address                              [--keyfile=<path>]
-        ethkeysgx sign <message>                            [--keyfile=<path>]
-        ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>]
+        ethkeysgx sign <message>                            [--keyfile=<path>] [--prefix]
+        ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [--prefix]
         ethkeysgx [-h | --help]
 
 Options:
     -h, --help          ❍ Show this usage message & quits.
+    -p, --prefix        ❍ Add the Geth prefix when signing or verifying a message. NOT YET IMPLEMENTED.
     --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
-
 
 Commands:
     generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
@@ -38,8 +38,8 @@ Commands:
                         current directory, or at the passed in path.
     show public         ❍ Log the public key from the given encrypted keypair to the console.
     show secret         ❍ Log the private key from the given encrypted keypair to the console.
-    sign                ❍ Signs a passed in message using key pair provided, otherwise 
-                        uses default keypair if it exists. 
+    sign                ❍ Signs a passed in message using key pair provided, otherwise uses
+                        default keypair if it exists. 
     verify              ❍ Verify a given address signed a given message with a given signature. 
 ";
 
@@ -59,9 +59,10 @@ struct Args {
 }
 /*
  * TODO: Factor this out a bit since it's getting a bit unweildy.
- * TODO: How to tie a sealed thingy to a specific enclave?!
+ * TODO: Use MRENCLAVE to tie a sealed thingy to this specific enclave!
  * TODO: Add a flag for a prefixed sig type?
  * TODO: Add option to verify via the hash too?
+ * TODO: Show full ethereum address!
  * */
 fn main() {
     Docopt::new(USAGE)
