@@ -16,12 +16,12 @@ Intel SGX Ethereum Key Management CLI.
     Copyright: 2018 Oraclize.it
     Questions: greg@oraclize.it
 
-Usage:  ethkeysgx generate                      [--keyfile=<path>]
-        ethkeysgx show public                   [--keyfile=<path>]
-        ethkeysgx show secret                   [--keyfile=<path>]
-        ethkeysgx show address                  [--keyfile=<path>]
-        ethkeysgx sign <message>                [--keyfile=<path>]
-        ethkeysgx verify <message> <address>    [--keyfile=<path>]
+Usage:  ethkeysgx generate                                  [--keyfile=<path>]
+        ethkeysgx show public                               [--keyfile=<path>]
+        ethkeysgx show secret                               [--keyfile=<path>]
+        ethkeysgx show address                              [--keyfile=<path>]
+        ethkeysgx sign <message>                            [--keyfile=<path>]
+        ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>]
         ethkeysgx [-h | --help]
 
 Options:
@@ -37,7 +37,7 @@ Commands:
     show secret         ❍ Log the private key from the given encrypted keypair to the console.
     sign                ❍ Signs a passed in message using key pair provided, otherwise 
                         uses default keypair if it exists.
-    verify              ❍ Verify signature of a given message (ecrecover)
+    verify              ❍ Verify a given address signed a given message with a given signature. 
 ";
 
 #[derive(Debug, Deserialize)]
@@ -51,7 +51,8 @@ struct Args {
     cmd_generate: bool,
     arg_message: String,
     arg_address: String,
-    flag_keyfile: String
+    flag_keyfile: String,
+    arg_signature: String
 }
 /*
  * TODO: Factor this out a bit since it's getting a bit unweildy.
@@ -69,7 +70,7 @@ fn execute(args: Args) -> () {
     match args {
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
         Args {cmd_sign: true, ..}     => sign(args.flag_keyfile, args.arg_message),
-        Args {cmd_verify: true, ..}   => verify(args.flag_keyfile, args.arg_message, args.arg_address),
+        Args {cmd_verify: true, ..}   => verify(args.arg_address, args.arg_message, args.arg_signature),
         Args {cmd_show: true, ..}     => {
             match args {
                 Args {cmd_public: true, ..}  => show_pub(args.flag_keyfile),
