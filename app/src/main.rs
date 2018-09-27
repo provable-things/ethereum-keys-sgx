@@ -39,7 +39,7 @@ Commands:
     show public         ❍ Log the public key from the given encrypted keypair to the console.
     show secret         ❍ Log the private key from the given encrypted keypair to the console.
     sign                ❍ Signs a passed in message using key pair provided, otherwise 
-                        uses default keypair if it exists.
+                        uses default keypair if it exists. 
     verify              ❍ Verify a given address signed a given message with a given signature. 
 ";
 
@@ -60,7 +60,7 @@ struct Args {
 /*
  * TODO: Factor this out a bit since it's getting a bit unweildy.
  * TODO: How to tie a sealed thingy to a specific enclave?!
- * TODO: Add a flag for a non-prefixed sig type?
+ * TODO: Add a flag for a prefixed sig type?
  * TODO: Add option to verify via the hash too?
  * */
 fn main() {
