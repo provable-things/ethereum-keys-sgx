@@ -51,6 +51,7 @@ struct Args {
     cmd_secret: bool,
     cmd_verify: bool,
     cmd_address: bool,
+    flag_prefix: bool,
     cmd_generate: bool,
     arg_message: String,
     arg_address: String,
@@ -74,8 +75,8 @@ fn main() {
 fn execute(args: Args) -> () {
     match args {
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
-        Args {cmd_sign: true, ..}     => sign(args.flag_keyfile, args.arg_message),
-        Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().unwrap(), args.arg_message, args.arg_signature), // FIXME: Unwrap! Plus rm 0x?
+        Args {cmd_sign: true, ..}     => sign(args.flag_keyfile, args.arg_message, args.flag_prefix),
+        Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().unwrap(), args.arg_message, args.arg_signature, args.flag_prefix), // FIXME: Unwrap! Plus rm 0x?
         Args {cmd_show: true, ..}     => {
             match args {
                 Args {cmd_public: true, ..}  => show_pub(args.flag_keyfile),
@@ -126,9 +127,9 @@ fn create_keypair(path: &String) -> (){
     };
 }
 
-fn sign(path: String, message: String) -> () { // TODO: Take argv flag re prefix!
-    match sign_message::run(&path, message) {
-        Ok(k)  => {println!("[+] Message signature: ");print_hex(k.to_vec())},
+fn sign(path: String, message: String, prefix: bool) -> () { // TODO: Take argv flag re prefix!
+    match sign_message::run(&path, message, prefix) {
+        Ok(k)  => {println!("[+] Message signature: ");print_hex(k.to_vec())}, // TODO: Print better
         Err(e) => println!("[-] Error signing message with key from {}:\n\t{:?}", &path, e)
     }
 }
@@ -147,8 +148,8 @@ fn show_addr(path: String) -> () {
     }
 }
 
-fn verify(address: &Address, message: String, signature: String) -> () {
-    match verify::run(address, message, signature) {
+fn verify(address: &Address, message: String, signature: String, prefix: bool) -> () {
+    match verify::run(address, message, signature, prefix) {
         Ok(b)  => {
             if b {
                 println!("[+] Signature verified! Message was signed with Ethereum Address: {}", address)
