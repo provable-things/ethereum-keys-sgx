@@ -3,7 +3,7 @@ use std::mem::size_of;
 use std::result;
 use sgx_types::*;
 use error::AppError;
-use keccak::hash_message;
+use keccak::hash_slice;
 use sgx_urts::SgxEnclave;
 use secp256k1::key::PublicKey;
 use init_enclave::init_enclave;
@@ -76,7 +76,7 @@ pub fn run() {
     // let ptr2: *mut u8 = &mut contents[0]; //erros now since it returns a result!
     // let msg = "Hello Oraclize!";
     // println!("[+] [App] Message to sign: {}", msg);
-    // let mut msg_hash = hash_message(msg);
+    // let mut msg_hash = hash_slice(msg);
     // println!("[+] [App] Hashed message {:?}", msg_hash);
     // let hash_ptr: *mut u8 = &mut msg_hash[0]; 
     // let result2 = unsafe {

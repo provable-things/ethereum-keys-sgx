@@ -16,16 +16,18 @@ Intel SGX Ethereum Key Management CLI.
     Copyright: 2018 Oraclize.it
     Questions: greg@oraclize.it
 
-Usage:  ethkeysgx generate       [--keyfile=<path>]
-        ethkeysgx show public    [--keyfile=<path>]
-        ethkeysgx show secret    [--keyfile=<path>]
-        ethkeysgx show address   [--keyfile=<path>]
-        ethkeysgx sign <message> [--keyfile=<path>]
+Usage:  ethkeysgx generate                      [--keyfile=<path>]
+        ethkeysgx show public                   [--keyfile=<path>]
+        ethkeysgx show secret                   [--keyfile=<path>]
+        ethkeysgx show address                  [--keyfile=<path>]
+        ethkeysgx sign <message>                [--keyfile=<path>]
+        ethkeysgx verify <message> <address>    [--keyfile=<path>]
         ethkeysgx [-h | --help]
 
 Options:
     -h, --help          ❍ Show this usage message & quits.
     --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+
 
 Commands:
     generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
@@ -35,6 +37,7 @@ Commands:
     show secret         ❍ Log the private key from the given encrypted keypair to the console.
     sign                ❍ Signs a passed in message using key pair provided, otherwise 
                         uses default keypair if it exists.
+    verify              ❍ Verify signature of a given message (ecrecover)
 ";
 
 #[derive(Debug, Deserialize)]
@@ -43,14 +46,17 @@ struct Args {
     cmd_show: bool,
     cmd_public: bool,
     cmd_secret: bool,
+    cmd_verify: bool,
     cmd_address: bool,
     cmd_generate: bool,
     arg_message: String,
+    arg_address: String,
     flag_keyfile: String
 }
 /*
  * TODO: Factor this out a bit since it's getting a bit unweildy.
  * TODO: How to tie a sealed thingy to a specific enclave?!
+ * TODO: Add a flag for a non-prefixed sig type?
  * */
 fn main() {
     Docopt::new(USAGE)
@@ -63,6 +69,7 @@ fn execute(args: Args) -> () {
     match args {
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
         Args {cmd_sign: true, ..}     => sign(args.flag_keyfile, args.arg_message),
+        Args {cmd_verify: true, ..}   => verify(args.flag_keyfile, args.arg_message, args.arg_address),
         Args {cmd_show: true, ..}     => {
             match args {
                 Args {cmd_public: true, ..}  => show_pub(args.flag_keyfile),
@@ -113,9 +120,9 @@ fn create_keypair(path: &String) -> (){
     };
 }
 
-fn sign(path: String, message: String) -> () { // TODO: Show pub key signed with!
+fn sign(path: String, message: String) -> () { // TODO: Show pub key signed with! TODO: Take argv flag re prefix!
     match sign_message::run(&path, message) {
-        Ok(k)  => println!("[+] Message signature: {:?}", &k[..]),
+        Ok(k)  => {println!("[+] Message signature: ");print_hex(k.to_vec())},
         Err(e) => println!("[-] Error signing message with key from {}:\n\t{:?}", &path, e)
     }
 }
@@ -132,6 +139,10 @@ fn show_addr(path: String) -> () { // TODO: Use eth types?
         Ok(k)  => {print!("[+] Ethereum Address: ");print_hex(k)},
         Err(e) => println!("[-] Error retreiving Ethereum Address from: {}:\n\t{:?}", &path, e)
     }
+}
+
+fn verify(path: String, message: String, address: String) -> () {
+    println!("false"); // FIXME: Implement!
 }
 
 fn keyfile_exists(path: &String) -> bool {

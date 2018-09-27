@@ -1,6 +1,6 @@
 use std::result;
 use error::AppError;
-use keccak::hash_message;
+use keccak::hash_slice;
 use sgx_urts::SgxEnclave;
 use sgx_types::sgx_status_t;
 use enclave_api::sign_message;
@@ -22,7 +22,7 @@ fn sign_hashed_message(mut keypair: EncryptedKeyPair, message: &String, enc: Sgx
             &mut sgx_status_t::SGX_SUCCESS, 
             &mut keypair[0] as *mut u8, 
             ENCRYPTED_KEYPAIR_SIZE as *const u32, 
-            &mut hash_message(message)[0] as *mut u8, // TODO: have a type for this too?
+            &mut hash_slice(message)[0] as *mut u8, // TODO: have a type for this too?
             &mut signature[0] as *mut u8
         )
     };

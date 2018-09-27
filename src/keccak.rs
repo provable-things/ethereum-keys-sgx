@@ -1,5 +1,5 @@
 use tiny_keccak::Keccak;
-// use secp256k1::key::PublicKey;
+use constants::ETH_PREFIX;
 
 pub trait Keccak256<T> {
     fn keccak256(&self) -> T where T: Sized;
@@ -15,6 +15,15 @@ impl Keccak256<[u8; 32]> for [u8] {
     }
 }
 
-pub fn hash_message(msg: &str) -> [u8;32] { // FIXME: use a type
-    msg.as_bytes().keccak256()
+pub fn hash_slice(slice: &str) -> [u8;32] { // FIXME: use a type?
+    slice.as_bytes().keccak256()
+}
+
+pub fn hash_hashed_msg_with_prefix(hashed_msg: [u8;32]) -> [u8;32] {
+    let mut keccak = Keccak::new_keccak256();
+    let mut result: [u8; 32] = [0; 32];
+    keccak.update(&hashed_msg);
+    keccak.update(&ETH_PREFIX.as_bytes());
+    keccak.finalize(&mut result);
+    result
 }
