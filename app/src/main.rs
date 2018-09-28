@@ -64,6 +64,7 @@ struct Args {
  * TODO: Add a flag for a prefixed sig type?
  * TODO: Add option to verify via the hash too?
  * TODO: Show full ethereum address!
+ * TODO: Check if ECRecoverable in solidity!
  * */
 fn main() {
     Docopt::new(USAGE)

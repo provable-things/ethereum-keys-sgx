@@ -15,9 +15,9 @@ _Pull the Rust SGX SDK Docker image_
 
 _**`❍ sgx-nuc@~$ docker pull baiduxlab/sgx-rust`**_
 
-_Clone the Rust SGX SDK Repo_
+_Clone this Repo_
 
-_**`❍ sgx-nuc@~$ git clone https://github.com/baidu/rust-sgx-sdk.git`**_
+_**`❍ sgx-nuc@~$ git clone https://gitlab.com/gskapka/secp256k1-enclave-rust.git`**_
 
 &nbsp;
 
@@ -25,11 +25,11 @@ _**❍ Prepare the Docker Container:**_
 
 If using __SIMULATION__ mode:
 
-_**`❍ sgx-nuc@~$ sudo docker run -v /path/to/sgx/sdk:/root/sgx -ti baiduxlab/sgx-rust`**_
+_**`❍ sgx-nuc@~$ sudo docker run -v /path/to/secp256k1-enclave-rust:/root/keygen -ti baiduxlab/sgx-rust`**_
 
 Else if using __HARDWARE__ mode:
 
-_**`❍ sgx-nuc@~$ sudo docker run -v /path/to/sgx/sdk:/root/sgx -ti --device /dev/isgx baiduxlab/sgx-rust`**_
+_**`❍ sgx-nuc@~$ sudo docker run -v/path/to/secp256k1-enclave-rust:/root/keygen -ti --device /dev/isgx baiduxlab/sgx-rust`**_
 
 Rebuild the tool chain:
 
@@ -47,7 +47,7 @@ _**`❍ sgx-nuc-docker@~# /opt/intel/sgxpsw/aesm/aesm_service &`**_
 
 __❍ Prepare the keygen:__
 
-In the `~/sgx/samplecode/secp256k1-enclave-rust` inside the docker, first ensure the desired mode (__SW__ or __HW__) is set correctly inside the `Makefile`:
+In the `❍ sgx-nuc-docker@~/keygen` directory inside the docker, first ensure the desired mode (__SW__ or __HW__) is set correctly inside the `Makefile`:
 
 ```javascript
     // ... Beginning of file ...
@@ -55,7 +55,7 @@ In the `~/sgx/samplecode/secp256k1-enclave-rust` inside the docker, first ensure
     ######## SGX SDK Settings ########
 
     SGX_SDK ?= /opt/intel/sgxsdk
-    SGX_MODE ?= SW                // <-- This option. HW for Hardware or SW for software.
+    SGX_MODE ?= HW                // <-- This option. HW for Hardware or SW for software.
     SGX_ARCH ?= x64
 
     // ... Remainder of file ...
@@ -63,15 +63,15 @@ In the `~/sgx/samplecode/secp256k1-enclave-rust` inside the docker, first ensure
 
 Next, set the environment variable inside the docker to the desired mode:
 
-_**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# export SGX_MODE=HW`**_
+_**`❍ sgx-nuc-docker@~/keygen# export SGX_MODE=HW`**_
 
 Then build the project:
 
-_**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# make`**_
+_**`❍ sgx-nuc-docker@~/keygen# make`**_
 
 And finally run it to see the usage notes:
 
-_**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# cd bin && ./ethkeysgx`**_
+_**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkeysgx`**_
 
 &nbsp;
 
@@ -89,7 +89,7 @@ _**`❍ sgx-nuc-docker@~/sgx/samplecode/secp256k1-enclave-rust# cd bin && ./ethk
 
 :black_square_button: Abstract out generic enclave funcs (mem. allocing etc)
 
-:black_square_button: Separate the app from the SDK repo enclave to make it lean and mean.
+:white_check_mark: Separate the app from the SDK repo enclave to make it lean and mean.
 
 :black_square_button: Make a stand alone binary for D/L.
 

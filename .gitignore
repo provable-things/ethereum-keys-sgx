@@ -12,3 +12,5 @@ Enclave_u.*
 /target
 **/*.rs.bk
 Cargo.lock
+!compiler-rt/libcompiler-rt-patch.a
+
