@@ -85,7 +85,15 @@ _**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkeysgx`**_
 
 :black_square_button: Remotely attest!
 
+:black_square_button: Make ECRecoverable sigs.
+
+:black_square_button: Stream to the enc. to allow file encryption.
+
+:black_square_button: Add rudimentary password protection.
+
 :black_square_button: Use mister enclave instead of mister signer!
+
+:black_square_button: Make threaded to have vanity addresses (can limit tried?)
 
 :black_square_button: Abstract out generic enclave funcs (mem. allocing etc)
 

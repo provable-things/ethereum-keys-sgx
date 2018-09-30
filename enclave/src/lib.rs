@@ -24,6 +24,7 @@ const HASH_LENGTH: usize = 32;
  * TODO: Make VANITY keygen & threading work!
  * TODO: Can have app call generate, rec. priv key, then call gen again if not vanity.
  * TODO: Factor stuff out to a proper app style like the other keygen I made.
+ * TODO: Factor out the unsealing!
  * TODO: Create better error handling for custom functions etc.
  * Then have method callable via ocall (add to edl!)
  * Note: MRENCLAVE signed = only THAT enc can unseal.
