@@ -7,7 +7,43 @@ https://github.com/baidu/rust-sgx-sdk
 
 &nbsp;
 
-## __:page_with_curl: Instructions:__
+## __:page_with_curl: CLI Usage:__
+
+<!-- Can I link to the actual usage file here so it updates on changes? -->
+
+```
+    Intel SGX Ethereum Key Management CLI.
+        Copyright: 2018 Oraclize.it
+        Questions: greg@oraclize.it
+
+    Usage:  ethkeysgx generate                                  [--keyfile=<path>]
+            ethkeysgx show public                               [--keyfile=<path>]
+            ethkeysgx show secret                               [--keyfile=<path>]
+            ethkeysgx show address                              [--keyfile=<path>]
+            ethkeysgx sign <message>                            [--keyfile=<path>] [--prefix]
+            ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [--prefix]
+            ethkeysgx [-h | --help]
+
+    Options:
+        -h, --help          ❍ Show this usage message & quits.
+        -p, --prefix        ❍ Add the Geth prefix when signing or verifying a message. NOT YET IMPLEMENTED.
+        --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+
+    Commands:
+        generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
+                            them & saves to disk as either ./encrypted_keypair.txt in the
+                            current directory, or at the passed in path.
+        show public         ❍ Log the public key from the given encrypted keypair to the console.
+        show secret         ❍ Log the private key from the given encrypted keypair to the console.
+        sign                ❍ Signs a passed in message using key pair provided, otherwise uses
+                            default keypair if it exists. 
+        verify              ❍ Verify a given address signed a given message with a given signature.
+```
+
+&nbsp;
+
+## __:wrench: Build it Yourself:__
+
 
 __❍ Pull requisite files:__
 
@@ -21,7 +57,7 @@ _**`❍ sgx-nuc@~$ git clone https://gitlab.com/gskapka/secp256k1-enclave-rust.g
 
 &nbsp;
 
-_**❍ Prepare the Docker Container:**_
+__**❍ Prepare the Docker Container:**__
 
 If using __SIMULATION__ mode:
 

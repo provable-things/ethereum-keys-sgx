@@ -8,9 +8,16 @@ extern crate secp256k1_enclave_rust;
 use docopt::Docopt;
 use std::path::Path;
 use ethereum_types::Address;
-use std::io::{stdin, stdout, Write};
-use secp256k1_enclave_rust::{generate_keypair, get_eth_address, get_public_key, show_private_key, sign_message, verify};
-
+use self::utils{keyfile_exists, print_hex, get_affirmation};
+use secp256k1_enclave_rust::{
+    show_private_key, 
+    generate_keypair, 
+    get_public_key, 
+    get_eth_address, 
+    sign_message, 
+    verify
+    utils
+};
 
 pub static DEFAULT_KEYPAIR_PATH: &'static str = "./encrypted_keypair.txt";
 
@@ -59,12 +66,9 @@ struct Args {
     arg_signature: String
 }
 /*
- * TODO: Factor this out a bit since it's getting a bit unweildy.
- * TODO: Use MRENCLAVE to tie a sealed thingy to this specific enclave!
- * TODO: Add a flag for a prefixed sig type?
- * TODO: Add option to verify via the hash too?
  * TODO: Show full ethereum address!
- * TODO: Check if ECRecoverable in solidity!
+ * TODO: Add option to verify via the hash too?
+ * TODO: Use MRENCLAVE to tie a sealed thingy to this specific enclave!
  * */
 fn main() {
     Docopt::new(USAGE)
@@ -90,34 +94,27 @@ fn execute(args: Args) -> () {
     };
 }
 
-fn generate(path: String) -> () { // TODO: Factor out some of this repeated logic.
-    if keyfile_exists(&path) {
-        let mut s = String::new();
-        print!("[!] WARNING! Something already exists at {} and will be overwritten.\n[!] WARNING! This cannot be undone. Overwrite? y/n\n", &path);
-        let _ = stdout().flush();
-        stdin().read_line(&mut s).expect("[-] You did not enter a correct string");
-        if s.trim() == "y" || s.trim() == "yes" {
-            create_keypair(&path)
-        } else {
-            return println!("[-] Affirmation not received, exiting.");
+fn generate(path: String) -> () {
+    match keyfile_exists(&path) {
+        false => create_keypair(&path),
+        true  => {
+            println!("[!] WARNING! Something already exists at {} and will be overwritten.\n", &path); 
+            match get_affirmation("This cannot be undone!") {
+                false => println!("[-] Affirmation not received, exiting."),
+                true  => create_keypair(&path)
+            }
         }
-    } else {
-        create_keypair(&path)
     }
 }
 
 fn show_priv(path: String) -> () {
-    let mut s = String::new();
-    print!("[!] WARNING! You are about to log your private key to the console! Proceed? y/n\n");
-    let _ = stdout().flush();
-    stdin().read_line(&mut s).expect("[-] You did not enter a correct string");
-    if s.trim() == "y" || s.trim() == "yes" {
-        match show_private_key::run(&path) {
+    match get_affirmation("You are about to log your private key to the console!") {
+        false => println!("[-] Affirmation not received, exiting."),
+        true  => {
+            match show_private_key::run(&path) {
             Ok(_)  => (),
             Err(e) => println!("[-] Error retreiving plaintext private key from {}:\n\t{:?}", &path, e)
         }
-    } else {
-        println!("[-] Affirmation not received, exiting.")
     }
 }
 
@@ -128,7 +125,7 @@ fn create_keypair(path: &String) -> (){
     };
 }
 
-fn sign(path: String, message: String, prefix: bool) -> () { // TODO: Take argv flag re prefix!
+fn sign(path: String, message: String, prefix: bool) -> () {
     match sign_message::run(&path, message, prefix) {
         Ok(k)  => {println!("[+] Message signature: ");print_hex(k.to_vec())}, // TODO: Print better
         Err(e) => println!("[-] Error signing message with key from {}:\n\t{:?}", &path, e)
@@ -151,25 +148,12 @@ fn show_addr(path: String) -> () {
 
 fn verify(address: &Address, message: String, signature: String, prefix: bool) -> () {
     match verify::run(address, message, signature, prefix) {
+        Err(e) => println!("[-] Error verifying signature: {}", e),
         Ok(b)  => {
-            if b {
-                println!("[+] Signature verified! Message was signed with Ethereum Address: {}", address)
-            } else {
-                println!("[!] Signature verification failed. Message was NOT signed with Ethereum Address: {}", address)
+            match b {
+                true  => println!("[+] Signature verified! Message was signed with Ethereum Address: {}", address),
+                false => println!("[!] Signature verification failed. Message was NOT signed with Ethereum Address: {}", address)
             }
-        },
-        Err(e) => println!("[-] Error verifying signature: {}", e)
+        }
     }
-}
-
-fn keyfile_exists(path: &String) -> bool {
-    Path::new(path).exists()
-}
-
-fn print_hex(vec: Vec<u8>) -> () { // TODO: impl on a type or something
-    print!("0x");
-    for ch in vec {
-        print!("{:02x}", ch); // TODO: Handle errors - MAKE LESS CRAP!
-    }
-    println!("");
 }

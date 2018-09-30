@@ -10,6 +10,7 @@ extern crate ethereum_types;
 pub mod fs;
 pub mod types;
 pub mod error;
+pub mod utils;
 pub mod keccak;
 pub mod verify;
 pub mod constants;

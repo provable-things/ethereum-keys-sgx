@@ -8,6 +8,7 @@ use keccak::{hash_slice, hash_with_prefix};
 use secp256k1::{key, Secp256k1, Message as SecpMessage, RecoverableSignature, RecoveryId};
 
 type Result<T> = result::Result<T, AppError>;
+
 // FIXME: This whole file is ugly!
 pub fn run(address: &Address, message: String, signature: String, prefix: bool) -> Result<bool> {
     Ok(&public_to_address(recover_public_key(
