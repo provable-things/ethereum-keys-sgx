@@ -6,16 +6,15 @@ extern crate ethereum_types;
 extern crate secp256k1_enclave_rust;
 
 use docopt::Docopt;
-use std::path::Path;
 use ethereum_types::Address;
-use self::utils{keyfile_exists, print_hex, get_affirmation};
+use self::utils::{keyfile_exists, print_hex, get_affirmation};
 use secp256k1_enclave_rust::{
     show_private_key, 
     generate_keypair, 
     get_public_key, 
     get_eth_address, 
     sign_message, 
-    verify
+    verify,
     utils
 };
 
@@ -99,7 +98,7 @@ fn generate(path: String) -> () {
         false => create_keypair(&path),
         true  => {
             println!("[!] WARNING! Something already exists at {} and will be overwritten.\n", &path); 
-            match get_affirmation("This cannot be undone!") {
+            match get_affirmation("This cannot be undone!".to_string()) {
                 false => println!("[-] Affirmation not received, exiting."),
                 true  => create_keypair(&path)
             }
@@ -108,12 +107,13 @@ fn generate(path: String) -> () {
 }
 
 fn show_priv(path: String) -> () {
-    match get_affirmation("You are about to log your private key to the console!") {
+    match get_affirmation("You are about to log your private key to the console!".to_string()) {
         false => println!("[-] Affirmation not received, exiting."),
         true  => {
             match show_private_key::run(&path) {
-            Ok(_)  => (),
-            Err(e) => println!("[-] Error retreiving plaintext private key from {}:\n\t{:?}", &path, e)
+                Ok(_)  => (),
+                Err(e) => println!("[-] Error retreiving plaintext private key from {}:\n\t{:?}", &path, e)
+            }
         }
     }
 }
