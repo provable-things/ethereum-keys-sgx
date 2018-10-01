@@ -10,9 +10,9 @@ use secp256k1::{key, Secp256k1, Message as SecpMessage, RecoverableSignature, Re
 type Result<T> = result::Result<T, AppError>;
 
 // FIXME: This whole file is ugly!
-pub fn run(address: &Address, message: String, signature: String, prefix: bool) -> Result<bool> {
+pub fn run(address: &Address, message: String, signature: String, no_prefix: bool) -> Result<bool> {
     Ok(&public_to_address(recover_public_key(
-        if prefix { hash_with_prefix(&message) } else { hash_slice(&message) }, 
+        if no_prefix { hash_slice(&message) } else { hash_with_prefix(&message) }, //match?
         signature)?
     )? == address) 
 }

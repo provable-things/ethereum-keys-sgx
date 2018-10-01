@@ -28,15 +28,16 @@ Intel SGX Ethereum Key Management CLI.
 Usage:  ethkeysgx generate                                  [--keyfile=<path>]
         ethkeysgx show public                               [--keyfile=<path>]
         ethkeysgx show secret                               [--keyfile=<path>]
-        ethkeysgx show address                              [--keyfile=<path>]
-        ethkeysgx sign <message>                            [--keyfile=<path>] [--prefix]
-        ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [--prefix]
+        ethkeysgx show address                              [--keyfile=<path>] 
+        ethkeysgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
+        ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
         ethkeysgx [-h | --help]
 
 Options:
-    -h, --help          ❍ Show this usage message & quits.
-    -p, --prefix        ❍ Add the Geth prefix when signing or verifying a message. NOT YET IMPLEMENTED.
+    -h, --help          ❍ Show this usage message.
     --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+    -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
+                        a signed message. Messages signed with no prefix are NOT ECRecoverable!
 
 Commands:
     generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
@@ -45,7 +46,8 @@ Commands:
     show public         ❍ Log the public key from the given encrypted keypair to the console.
     show secret         ❍ Log the private key from the given encrypted keypair to the console.
     sign                ❍ Signs a passed in message using key pair provided, otherwise uses
-                        default keypair if it exists. 
+                        default keypair if it exists. Defaults to using the ethereum message
+                        prefix and ∴ signatures are ECRecoverable.
     verify              ❍ Verify a given address signed a given message with a given signature. 
 ";
 
@@ -57,8 +59,8 @@ struct Args {
     cmd_secret: bool,
     cmd_verify: bool,
     cmd_address: bool,
-    flag_prefix: bool,
     cmd_generate: bool,
+    flag_noprefix: bool,
     arg_message: String,
     arg_address: String,
     flag_keyfile: String,
@@ -79,8 +81,8 @@ fn main() {
 fn execute(args: Args) -> () {
     match args {
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
-        Args {cmd_sign: true, ..}     => sign(args.flag_keyfile, args.arg_message, args.flag_prefix),
-        Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().unwrap(), args.arg_message, args.arg_signature, args.flag_prefix), // FIXME: Unwrap! Plus rm 0x?
+        Args {cmd_sign: true, ..}     => sign(args.flag_keyfile, args.arg_message, args.flag_noprefix),
+        Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().unwrap(), args.arg_message, args.arg_signature, args.flag_noprefix), // FIXME: Unwrap! Plus rm 0x?
         Args {cmd_show: true, ..}     => {
             match args {
                 Args {cmd_public: true, ..}  => show_pub(args.flag_keyfile),
@@ -125,10 +127,15 @@ fn create_keypair(path: &String) -> (){
     };
 }
 
-fn sign(path: String, message: String, prefix: bool) -> () {
-    match sign_message::run(&path, message, prefix) {
-        Ok(k)  => {println!("[+] Message signature: ");print_hex(k.to_vec())}, // TODO: Print better
-        Err(e) => println!("[-] Error signing message with key from {}:\n\t{:?}", &path, e)
+fn sign(path: String, message: String, no_prefix: bool) -> () {
+    match sign_message::run(&path, message, no_prefix) {
+        Err(e) => println!("[-] Error signing message with key from {}:\n\t{:?}", &path, e),
+        Ok(k)  => {
+            match no_prefix { // TODO: Print better
+                true  => {println!("[+] Message signature (no prefix): ");print_hex(k.to_vec())},
+                false => {println!("[+] Message signature (with prefix): ");print_hex(k.to_vec())}
+            }
+        }
     }
 }
 
@@ -146,8 +153,8 @@ fn show_addr(path: String) -> () {
     }
 }
 
-fn verify(address: &Address, message: String, signature: String, prefix: bool) -> () {
-    match verify::run(address, message, signature, prefix) {
+fn verify(address: &Address, message: String, signature: String, no_prefix: bool) -> () {
+    match verify::run(address, message, signature, no_prefix) {
         Err(e) => println!("[-] Error verifying signature: {}", e),
         Ok(b)  => {
             match b {

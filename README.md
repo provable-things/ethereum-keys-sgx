@@ -12,32 +12,34 @@ https://github.com/baidu/rust-sgx-sdk
 <!-- Can I link to the actual usage file here so it updates on changes? -->
 
 ```
-    Intel SGX Ethereum Key Management CLI.
-        Copyright: 2018 Oraclize.it
-        Questions: greg@oraclize.it
+      Intel SGX Ethereum Key Management CLI.
+          Copyright: 2018 Oraclize.it
+          Questions: greg@oraclize.it
 
-    Usage:  ethkeysgx generate                                  [--keyfile=<path>]
-            ethkeysgx show public                               [--keyfile=<path>]
-            ethkeysgx show secret                               [--keyfile=<path>]
-            ethkeysgx show address                              [--keyfile=<path>]
-            ethkeysgx sign <message>                            [--keyfile=<path>] [--prefix]
-            ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [--prefix]
-            ethkeysgx [-h | --help]
+      Usage:  ethkeysgx generate                                  [--keyfile=<path>]
+              ethkeysgx show public                               [--keyfile=<path>]
+              ethkeysgx show secret                               [--keyfile=<path>]
+              ethkeysgx show address                              [--keyfile=<path>] 
+              ethkeysgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
+              ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
+              ethkeysgx [-h | --help]
 
-    Options:
-        -h, --help          ❍ Show this usage message & quits.
-        -p, --prefix        ❍ Add the Geth prefix when signing or verifying a message. NOT YET IMPLEMENTED.
-        --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+      Options:
+          -h, --help          ❍ Show this usage message.
+          --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+          -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
+                              a signed message. Messages signed with no prefix are NOT ECRecoverable!
 
-    Commands:
-        generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
-                            them & saves to disk as either ./encrypted_keypair.txt in the
-                            current directory, or at the passed in path.
-        show public         ❍ Log the public key from the given encrypted keypair to the console.
-        show secret         ❍ Log the private key from the given encrypted keypair to the console.
-        sign                ❍ Signs a passed in message using key pair provided, otherwise uses
-                            default keypair if it exists. 
-        verify              ❍ Verify a given address signed a given message with a given signature.
+      Commands:
+          generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
+                              them & saves to disk as either ./encrypted_keypair.txt in the
+                              current directory, or at the passed in path.
+          show public         ❍ Log the public key from the given encrypted keypair to the console.
+          show secret         ❍ Log the private key from the given encrypted keypair to the console.
+          sign                ❍ Signs a passed in message using key pair provided, otherwise uses
+                              default keypair if it exists. Defaults to using the ethereum message
+                              prefix and ∴ signatures are ECRecoverable.
+          verify              ❍ Verify a given address signed a given message with a given signature.
 ```
 
 &nbsp;
@@ -121,7 +123,7 @@ _**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkeysgx`**_
 
 :black_square_button: Remotely attest!
 
-:black_square_button: Make ECRecoverable sigs.
+:white_check_mark: Make ECRecoverable sigs.
 
 :black_square_button: Stream to the enc. to allow file encryption.
 

@@ -10,10 +10,10 @@ use types::{MessageSignature, EncryptedKeyPair, ENCRYPTED_KEYPAIR_SIZE};
 
 type Result<T> = result::Result<T, AppError>;
 
-pub fn run(path: &String, message: String, prefix: bool) -> Result<MessageSignature> {
+pub fn run(path: &String, message: String, no_prefix: bool) -> Result<MessageSignature> {
     sign_hashed_message(
         read_encrypted_keyfile(&path)?, 
-        if prefix { hash_with_prefix(&message) } else { hash_slice(&message) }, 
+        if no_prefix { hash_slice(&message) } else { hash_with_prefix(&message) }, 
         init_enclave()?
     )
 }
