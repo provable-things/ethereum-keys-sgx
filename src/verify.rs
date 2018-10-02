@@ -12,7 +12,7 @@ type Result<T> = result::Result<T, AppError>;
 // FIXME: This whole file is ugly!
 pub fn run(address: &Address, message: String, signature: String, no_prefix: bool) -> Result<bool> {
     Ok(&public_to_address(recover_public_key(
-        if no_prefix { hash_slice(&message) } else { hash_with_prefix(&message) }, //match?
+        if no_prefix { hash_slice(&message) } else { hash_with_prefix(&message) },
         signature)?
     )? == address) 
 }
