@@ -67,9 +67,13 @@ struct Args {
     arg_signature: String
 }
 /*
- * TODO: Show full ethereum address!
- * TODO: Add option to verify via the hash too?
- * TODO: Use MRENCLAVE to tie a sealed thingy to this specific enclave!
+ * TODO: Use a monotonic counter attached to a tx signer to count number of signed txs.
+ * TODO: Store the uuid of the MCs in the keyfile struct as well.
+ * NOTE: Initial version of MC will be MRSIGNER not MRENCLAVE.
+ * TODO: Could use the first MC to just count how many unseal events there have been?
+ * TODO: OR just the number of times the private key has been shown?
+ * TODO: Use SGX time to log the last time key file was accessed. (This & above need bigger key struc!)
+ * TODO: Store address in hex in keyfile!
  * */
 fn main() {
     Docopt::new(USAGE)

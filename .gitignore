@@ -9,6 +9,7 @@ Cargo.lock
 Enclave_t.*
 Enclave_u.*
 *.swp
+*.swo
 /target
 **/*.rs.bk
 Cargo.lock
