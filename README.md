@@ -55,7 +55,14 @@ Can also run make file targets separately when making changes to either app or e
 
 :black_square_button: Separate the app from the SDK repo enclave to make it lean and mean.
 
+:black_square_button: Add transaction signing.
+
 :black_square_button: Make a stand alone binary for D/L.
+
+:black_square_button: Add a monotonic counter to the key accesses.
+
+:black_square_button: Add a monotonic counter to tx signing events.
+
 
 &nbsp;
 
