@@ -71,6 +71,10 @@ _**`❍ sgx-nuc@~$ sudo docker run -v/path/to/secp256k1-enclave-rust:/root/keyge
 
 Rebuild the tool chain:
 
+<!-- 
+_**`❍ sgx-nuc-docker@~# rustup default nightly-2018-08-25-x86_64-unknown-linux-gnu`**_
+-->
+
 _**`❍ sgx-nuc-docker@~# rustup default nightly-2018-08-25-x86_64-unknown-linux-gnu`**_
 
 Add required components:
