@@ -17,6 +17,10 @@ _**`❍ sgx-nuc@~$ sudo docker run -v ~/oraclize/sgx/rust-sgx-sdk:/root/sgx -ti 
 
 Rebuild the tool chain too per instructions:
 
+<!-- 
+_**`❍ sgx-nuc-docker@~# rustup default nightly-2018-08-25-x86_64-unknown-linux-gnu`**_
+-->
+
 _**`❍ sgx-nuc-docker@~# rustup default nightly-2018-08-25-x86_64-unknown-linux-gnu`**_
 
 _**`❍ sgx-nuc-docker@~# rustup component add rust-src`**_
