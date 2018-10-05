@@ -8,15 +8,21 @@ use sgx_rand::{Rng, thread_rng};
 use sgx_types::marker::ContiguousMemory;
 use secp256k1::key::{SecretKey, PublicKey};
 use sealer::{to_sealed_log, from_sealed_log};
-use sgx_tservice::sgxcounter::SgxMonotonicCounter;
+// use sgx_tservice::sgxcounter::SgxMonotonicCounter;
 
 type Result<T> = result::Result<T, EnclaveError>;
 
 #[derive(Copy, Clone)]//, Debug)] <-- Can't derive debug due to no display. Implement & sort the errors!
-pub struct KeyPair<'a> {
+// pub struct KeyPair<'a> {
+//     pub public: PublicKey,
+//     pub(crate) secret: SecretKey,
+//     // pub private_key_accesses_mc: &'a SgxMonotonicCounter
+// }
+
+pub struct KeyPair{
     pub public: PublicKey,
     pub(crate) secret: SecretKey,
-    pub private_key_accesses_mc: &'a SgxMonotonicCounter
+    // pub private_key_accesses_mc: &'a SgxMonotonicCounter
 }
 
 #[no_mangle]
@@ -123,7 +129,6 @@ pub extern "C" fn show_private_key(
 //     wall_time: Duration,
 // }
 
-unsafe impl<'a> ContiguousMemory for KeyPair<'a>{}
 
 // impl fmt::Display for KeyPair {
 //     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
@@ -133,12 +138,27 @@ unsafe impl<'a> ContiguousMemory for KeyPair<'a>{}
 // 	}
 // }
 
-impl<'a> KeyPair<'a> {
-    pub fn new() -> Result<KeyPair<'a>> {
+// NOTE: ISSUE: Maybe reinstate these lifetime param versions!!
+// unsafe impl<'a> ContiguousMemory for KeyPair<'a>{}
+
+// impl<'a> KeyPair<'a> {
+//     pub fn new() -> Result<KeyPair<'a>> {
+//         let s = generate_random_priv_key()?;
+//         let p = get_public_key_from_secret(s);
+//         let mc = SgxMonotonicCounter::new(&mut 0)?;
+//         Ok(KeyPair{secret: s, public: p})//, private_key_accesses_mc: &mc})
+//     }
+// }
+// NOTE: ISSUE: Maybe reinstate these lifetime param versions!!
+
+unsafe impl ContiguousMemory for KeyPair{}
+
+impl KeyPair {
+    pub fn new() -> Result<KeyPair> {
         let s = generate_random_priv_key()?;
         let p = get_public_key_from_secret(s);
-        let mc = SgxMonotonicCounter::new(&mut 0)?;
-        Ok(KeyPair{secret: s, public: p, private_key_accesses_mc: &mc})
+        // let mc = SgxMonotonicCounter::new(&mut 0)?;
+        Ok(KeyPair{secret: s, public: p})//, private_key_accesses_mc: &mc})
     }
 }
 

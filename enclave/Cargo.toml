@@ -10,12 +10,12 @@ crate-type = ["staticlib"]
 default = []
 
 [dependencies]
-# For non-sgx stuff so there are no conflicts.
 
 [target.'cfg(not(target_env = "sgx"))'.dependencies]
-sgx_tstd = { git = "https://github.com/baidu/rust-sgx-sdk", features = ["backtrace"] }
-sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_rand = { git = "https://github.com/baidu/rust-sgx-sdk" }
-sgx_tcrypto = { git = "https://github.com/baidu/rust-sgx-sdk" }
 sgx_tseal = { git = "https://github.com/baidu/rust-sgx-sdk" }
+sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
+sgx_tcrypto = { git = "https://github.com/baidu/rust-sgx-sdk" }
+sgx_tservice = { git = "https://github.com/baidu/rust-sgx-sdk" }
+sgx_tstd = { git = "https://github.com/baidu/rust-sgx-sdk", features = ["backtrace"] }
 secp256k1-sgx = { git = "https://github.com/bl4ck5un/rust-secp256k1-sgx", features=["rand"] }

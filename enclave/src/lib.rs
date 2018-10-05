@@ -17,7 +17,11 @@ mod keygen;
 mod signer;
 mod sealer;
 mod constants;
+
+pub use signer::sign_message;
+pub use keygen::{generate_keypair, get_public_key, show_private_key};
 /*
+ * TODO: Change package name & stuff in Cargo.toml
  * TODO: Make VANITY keygen & threading work!
  * TODO: Can have app call generate, rec. priv key, then call gen again if not vanity.
  * TODO: Factor stuff out to a proper app style like the other keygen I made.
