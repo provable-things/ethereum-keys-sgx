@@ -137,7 +137,14 @@ _**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkeysgx`**_
 
 :white_check_mark: Separate the app from the SDK repo enclave to make it lean and mean.
 
+:black_square_button: Add transaction signing.
+
 :black_square_button: Make a stand alone binary for D/L.
+
+:black_square_button: Add a monotonic counter to the key accesses.
+
+:black_square_button: Add a monotonic counter to tx signing events.
+
 
 &nbsp;
 
