@@ -6,7 +6,6 @@ extern crate sgx_types;
 extern crate tiny_keccak;
 extern crate ethereum_types;
 
-
 pub mod fs;
 pub mod types;
 pub mod error;

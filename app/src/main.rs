@@ -67,6 +67,7 @@ struct Args {
     arg_signature: String
 }
 /*
+ * NOTE: tseal internal.rs has good info in it.
  * TODO: Use a monotonic counter attached to a tx signer to count number of signed txs.
  * TODO: Store the uuid of the MCs in the keyfile struct as well.
  * NOTE: Initial version of MC will be MRSIGNER not MRENCLAVE.
