@@ -71,7 +71,7 @@ _**`❍ sgx-nuc@~$ sudo docker run -v/path/to/secp256k1-enclave-rust:/root/keyge
 
 Rebuild the tool chain:
 
-_**`❍ sgx-nuc-docker@~# rustup default nightly-2018-08-25-x86_64-unknown-linux-gnu`**_
+_**`❍ sgx-nuc-docker@~# rustup default nightly-2018-10-01-x86_64-unknown-linux-gnu`**_
 
 Add required components:
 
@@ -79,7 +79,7 @@ _**`❍ sgx-nuc-docker@~# rustup component add rust-src`**_
 
 Finally, if using __HARDWARE__ mode, import the service:_
 
-_**`❍ sgx-nuc-docker@~# /opt/intel/sgxpsw/aesm/aesm_service &`**_
+_**`❍ sgx-nuc-docker@~# /opt/intel/libsgx-enclave-common/aesm/aesm_service &`**_
 
 &nbsp;
 
