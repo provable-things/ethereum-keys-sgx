@@ -8,7 +8,6 @@ use sgx_rand::{Rng, thread_rng};
 use sgx_types::marker::ContiguousMemory;
 use secp256k1::key::{SecretKey, PublicKey};
 use sealer::{to_sealed_log, from_sealed_log};
-// use sgx_tservice::sgxcounter::SgxMonotonicCounter;
 
 type Result<T> = result::Result<T, EnclaveError>;
 
@@ -123,7 +122,7 @@ pub extern "C" fn show_private_key(
 
 // #[derive(Serialize, Deserialize)]
 // struct Process {
-//     command_line: String,
+//     command_line : String,
 
 //     #[serde(with = "DurationDef")]
 //     wall_time: Duration,
@@ -162,7 +161,7 @@ impl KeyPair {
     }
 }
 
-pub fn verify_pair(keys: KeyPair) -> bool { // Note: Can't impl. since decryption loses methods on structs obvs.
+pub fn verify_pair(keys: KeyPair) -> bool { // NOTE: Can't impl. since decryption loses methods on structs obvs.
     keys.public == get_public_key_from_secret(keys.secret)
 }
 

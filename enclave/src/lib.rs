@@ -12,6 +12,7 @@ extern crate secp256k1;
 extern crate sgx_tcrypto;
 extern crate sgx_tservice;
 
+mod mc;
 mod error;
 mod keygen;
 mod signer;
@@ -19,6 +20,7 @@ mod sealer;
 mod constants;
 
 pub use signer::sign_message;
+pub use mc::{generate_zeroed_mc};
 pub use keygen::{generate_keypair, get_public_key, show_private_key};
 /*
  * TODO: Change package name & stuff in Cargo.toml
