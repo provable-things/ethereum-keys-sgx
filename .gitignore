@@ -14,4 +14,4 @@ Enclave_u.*
 **/*.rs.bk
 Cargo.lock
 !compiler-rt/libcompiler-rt-patch.a
-
+!sgx-time-test/*.so
