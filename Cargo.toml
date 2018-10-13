@@ -1,5 +1,5 @@
 [package]
-name = "secp256k1_enclave_rust"
+name = "ethkey_sgx_app"
 version = "0.1.0"
 authors = ["gregkapka <greg@oraclize.it>"]
 

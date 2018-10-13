@@ -1,15 +1,14 @@
 bin/
 target/
 .idea/
-*.o
+**/*.c
 *.a
 *.so
 *.la
 Cargo.lock
 Enclave_t.*
 Enclave_u.*
-*.swp
-*.swo
+*.sw*
 /target
 **/*.rs.bk
 Cargo.lock

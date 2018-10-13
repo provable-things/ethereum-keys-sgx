@@ -1,5 +1,5 @@
 [package]
-name = "ethkeysgx" # Note: changes here need mirroring in Makefile
+name = "ethkey_sgx" # Note: changes here need mirroring in Makefile
 version = "0.1.0"
 authors = ["gregkapka <greg@oraclize.it>"]
 build = "build.rs"
@@ -9,4 +9,4 @@ serde = "1.0"
 docopt = "1.0.1"
 serde_derive = "1.0.79"
 ethereum-types = "0.4.0"
-secp256k1_enclave_rust = { path = "../" }
+ethkey_sgx_app = { path = "../" }

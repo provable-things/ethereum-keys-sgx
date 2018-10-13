@@ -3,12 +3,12 @@ extern crate docopt;
 #[macro_use]
 extern crate serde_derive;
 extern crate ethereum_types;
-extern crate secp256k1_enclave_rust;
+extern crate ethkey_sgx_app;
 
 use docopt::Docopt;
 use ethereum_types::Address;
 use self::utils::{keyfile_exists, print_hex, get_affirmation};
-use secp256k1_enclave_rust::{
+use ethkey_sgx_app::{
     show_private_key, 
     generate_keypair, 
     get_public_key, 

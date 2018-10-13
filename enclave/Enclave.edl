@@ -1,8 +1,9 @@
 enclave {
     from "sgx_tstd.edl" import *;
+    from "sgx_tstdc.edl" import *;
     from "sgx_stdio.edl" import *;
     from "sgx_backtrace.edl" import *;
-    from "sgx_tstdc.edl" import *;
+    from "sgx_tae_service.edl" import *;
     trusted {
       /* define ECALLs here. */
       
