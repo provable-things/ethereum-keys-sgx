@@ -1,9 +1,10 @@
 [package]
-name = "secp256k1-examples"
-version = "0.0.1"
-authors = ["Fan Zhang <fanz@cs.cornell.edu>"]
+name = "ethkey_sgx_enclave"
+version = "0.1.0"
+authors = ["Greg Kapka <greg@oraclize.it>"]
 
 [lib]
+name = "ethkey_sgx_enclave"
 crate-type = ["staticlib"]
 
 [features]
