@@ -30,7 +30,7 @@
 ######## SGX SDK Settings ########
 
 SGX_SDK ?= /opt/intel/sgxsdk
-SGX_MODE ?= SW
+SGX_MODE ?= HW
 SGX_ARCH ?= x64
 
 ifeq ($(shell getconf LONG_BIT), 32)
@@ -140,7 +140,7 @@ $(App_Name): $(App_Enclave_u_Object)
 	@cd app && SGX_SDK=$(SGX_SDK) cargo build $(App_Rust_Flags)
 	@echo "Cargo  =>  $@"
 	mkdir -p $(CUSTOM_BIN_PATH)
-	cp $(App_Rust_Path)/ethkeysgx $(CUSTOM_BIN_PATH)
+	cp $(App_Rust_Path)/ethkey_sgx $(CUSTOM_BIN_PATH)
 
 ######## Enclave Objects ########
 

@@ -31,7 +31,7 @@ Usage:  ethkeysgx generate                                  [--keyfile=<path>]
         ethkeysgx show address                              [--keyfile=<path>] 
         ethkeysgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
         ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
-        ethkeysgx [-h | --help]
+        ethkeysgx                                           [-h | --help]
 
 Options:
     -h, --help          ❍ Show this usage message.
