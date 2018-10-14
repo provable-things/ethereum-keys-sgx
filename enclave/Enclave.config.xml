@@ -1,9 +1,25 @@
-<!-- Please refer to User's Guide for the explanation of each field -->
+<!-- 
+    ProdID: ISV assigned Product ID.
+    ISVSN: ISV assigned SVN.
+    StackMaxSize: The maximum stack size per thread.  Must be 4KB aligned.
+                  See p23 of Linux Developer SDK for details of how to measure.
+                  https://github.com/intel/linux-sgx/issues/136
+    HeapMaxSize: The maximum heap size for the process. Must be 4KB aligned.
+    TCSNum: The maximum stack size per thread.  Must be 4KB aligned.
+    TCSPolicy: TCS management policy.
+               0 – TCS is bound to the untrusted thread.
+               1 – TCS is not bound to the untrusted thread.
+    DisableDegbug: 3~Enclave cannot be debugged.
+                   0 - Enclave CAN be debugged.
+                   1 - Enclave CANNOT be debugged.
+    MiscSelect: The desired Extended SSA frame feature.
+    MiscMask: The mask bits of MiscSelect to enforce.
+-->
 <EnclaveConfiguration>
   <ProdID>0</ProdID>
   <ISVSVN>0</ISVSVN>
   <StackMaxSize>0x40000</StackMaxSize>
-  <HeapMaxSize>0x500000</HeapMaxSize>
+  <HeapMaxSize>0xA00000</HeapMaxSize>
   <TCSNum>1</TCSNum>
   <TCSPolicy>0</TCSPolicy>
   <DisableDebug>0</DisableDebug>

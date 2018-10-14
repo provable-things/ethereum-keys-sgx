@@ -25,21 +25,21 @@ impl fmt::Display for EnclaveError {
 }
 
 impl Error for EnclaveError {
-	fn description(&self) -> &str {
-		"Program Error"
-	}
+    fn description(&self) -> &str {
+            "Program Error"
+    }
 }
 
 impl Into<String> for EnclaveError {
-	fn into(self) -> String {
-		format!("{}", self)
-	}
+    fn into(self) -> String {
+            format!("{}", self)
+    }
 }
 
 impl From<fmt::Error> for EnclaveError {
-	fn from(err: fmt::Error) -> EnclaveError {
-		EnclaveError::Fmt(err)
-	}
+    fn from(err: fmt::Error) -> EnclaveError {
+            EnclaveError::Fmt(err)
+    }
 }
 
 impl From<sgx_status_t> for EnclaveError {
@@ -49,7 +49,7 @@ impl From<sgx_status_t> for EnclaveError {
 }
 
 impl From<secp256k1::Error> for EnclaveError {
-	fn from(e: secp256k1::Error) -> EnclaveError {
+    fn from(e: secp256k1::Error) -> EnclaveError {
         EnclaveError::Secp256k1Error(e)
-	}
+    }
 }

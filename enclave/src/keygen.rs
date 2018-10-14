@@ -8,7 +8,6 @@ use sgx_rand::{Rng, thread_rng};
 use sgx_types::marker::ContiguousMemory;
 use secp256k1::key::{SecretKey, PublicKey};
 use sealer::{to_sealed_log, from_sealed_log};
-// use sgx_tservice::sgxcounter::SgxMonotonicCounter;
 
 type Result<T> = result::Result<T, EnclaveError>;
 
@@ -123,8 +122,7 @@ pub extern "C" fn show_private_key(
 
 // #[derive(Serialize, Deserialize)]
 // struct Process {
-//     command_line: String,
-
+//     command_line : String,
 //     #[serde(with = "DurationDef")]
 //     wall_time: Duration,
 // }
@@ -150,7 +148,12 @@ pub extern "C" fn show_private_key(
 //     }
 // }
 // NOTE: ISSUE: Maybe reinstate these lifetime param versions!!
-
+/*
+ * TODO: Add replay protection by storing an mc count & mcid in the struct.
+ * TODO: Check the mc counter matches the count in the struct any time sealed data is accessed.
+ * TODO: Increment the count any time the sealed data is accessed.
+ *
+ * */
 unsafe impl ContiguousMemory for KeyPair{}
 
 impl KeyPair {
@@ -158,11 +161,13 @@ impl KeyPair {
         let s = generate_random_priv_key()?;
         let p = get_public_key_from_secret(s);
         // let mc = SgxMonotonicCounter::new(&mut 0)?;
+        // let count = mononotic count! // TODO: this!
+        // let mcid = monotonic counter id! TODO: this!
         Ok(KeyPair{secret: s, public: p})//, private_key_accesses_mc: &mc})
     }
 }
 
-pub fn verify_pair(keys: KeyPair) -> bool { // Note: Can't impl. since decryption loses methods on structs obvs.
+pub fn verify_pair(keys: KeyPair) -> bool { // NOTE: Can't impl. since decryption loses methods on structs obvs.
     keys.public == get_public_key_from_secret(keys.secret)
 }
 

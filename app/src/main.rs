@@ -3,12 +3,12 @@ extern crate docopt;
 #[macro_use]
 extern crate serde_derive;
 extern crate ethereum_types;
-extern crate secp256k1_enclave_rust;
+extern crate ethkey_sgx_app;
 
 use docopt::Docopt;
 use ethereum_types::Address;
 use self::utils::{keyfile_exists, print_hex, get_affirmation};
-use secp256k1_enclave_rust::{
+use ethkey_sgx_app::{
     show_private_key, 
     generate_keypair, 
     get_public_key, 
@@ -31,7 +31,7 @@ Usage:  ethkeysgx generate                                  [--keyfile=<path>]
         ethkeysgx show address                              [--keyfile=<path>] 
         ethkeysgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
         ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
-        ethkeysgx [-h | --help]
+        ethkeysgx                                           [-h | --help]
 
 Options:
     -h, --help          ❍ Show this usage message.
@@ -75,6 +75,9 @@ struct Args {
  * TODO: OR just the number of times the private key has been shown?
  * TODO: Use SGX time to log the last time key file was accessed. (This & above need bigger key struc!)
  * TODO: Store address in hex in keyfile!
+ * TODO: Show full ethereum address!
+ * TODO: Add option to verify via the hash too?
+ * TODO: Use MRENCLAVE to tie a sealed thingy to this specific enclave!
  * */
 fn main() {
     Docopt::new(USAGE)
