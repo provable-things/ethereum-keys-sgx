@@ -21,8 +21,8 @@ mod constants;
 mod monotonic_counter;
 
 pub use signer::sign_message;
-pub use mc::{generate_zeroed_mc};
 pub use sgx_time::sgx_time_sample;
+pub use monotonic_counter::{generate_zeroed_mc};
 pub use keygen::{generate_keypair, get_public_key, show_private_key};
 /*
  * TODO: Change package name & stuff in Cargo.toml

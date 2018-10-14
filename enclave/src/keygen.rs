@@ -149,7 +149,12 @@ pub extern "C" fn show_private_key(
 //     }
 // }
 // NOTE: ISSUE: Maybe reinstate these lifetime param versions!!
-
+/*
+ * TODO: Add replay protection by storing an mc count & mcid in the struct.
+ * TODO: Check the mc counter matches the count in the struct any time sealed data is accessed.
+ * TODO: Increment the count any time the sealed data is accessed.
+ *
+ * */
 unsafe impl ContiguousMemory for KeyPair{}
 
 impl KeyPair {
@@ -157,6 +162,8 @@ impl KeyPair {
         let s = generate_random_priv_key()?;
         let p = get_public_key_from_secret(s);
         // let mc = SgxMonotonicCounter::new(&mut 0)?;
+        // let count = mononotic count! // TODO: this!
+        // let mcid = monotonic counter id! TODO: this!
         Ok(KeyPair{secret: s, public: p})//, private_key_accesses_mc: &mc})
     }
 }
