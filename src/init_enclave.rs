@@ -75,7 +75,7 @@ fn initialize() -> SgxResult<SgxEnclave> {
         }
     }
     // Step 2: call sgx_create_enclave to initialize an enclave instance
-    // Debug Support: set 2nd parameter to 1
+    // Debug Support: 1 = debug mode, 0 = not debug mode
     let debug = 1;
     let mut misc_attr = sgx_misc_attribute_t {secs_attr: sgx_attributes_t { flags:0, xfrm:0}, misc_select:0};
     let enclave = try!(SgxEnclave::create(ENCLAVE_FILE,
