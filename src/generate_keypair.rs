@@ -19,7 +19,7 @@ fn save_keypair(data: EncryptedKeyPair, path: &String) -> Result<()> {
     Ok(write_keyfile(&path, &data)?)
 }
 
-fn get_encrypted_keypair(enc: SgxEnclave) -> Result<EncryptedKeyPair> { // TODO: check if path exists first, then env. args to act on that info.
+fn get_encrypted_keypair(enc: SgxEnclave) -> Result<EncryptedKeyPair> {
     let mut encrypted_keys: EncryptedKeyPair = vec![0u8; ENCRYPTED_KEYPAIR_SIZE];
     let ptr: *mut u8 = &mut encrypted_keys[0];
     let result = unsafe {

@@ -12,13 +12,13 @@ extern crate secp256k1;
 extern crate sgx_tcrypto;
 extern crate sgx_tservice;
 
-mod mc;
 mod error;
 mod keygen;
 mod signer;
 mod sealer;
 mod sgx_time;
 mod constants;
+mod monotonic_counter;
 
 pub use signer::sign_message;
 pub use mc::{generate_zeroed_mc};

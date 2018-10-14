@@ -28,11 +28,33 @@ pub fn increment_mc_count(mc: SgxMonotonicCounter) -> Result<u32> {
 fn increment_mc(mc: SgxMonotonicCounter) -> Result<u32> {
     Ok(mc.increment()?)
 }
-
+// Note, looking at the actual function that creates the MC, it gets passed a pointer that
+// eventually holds the uuid of the counter itself. INVESTIGATE!
+// Proposal - rather than using this SDK's helper method, call sgx_create_monotonic_counter
+// direclty to attain the uuid. Then do as I please with it.
 fn generate_mc(mut count: u32) -> Result<SgxMonotonicCounter> {
     Ok(SgxMonotonicCounter::new(&mut count)?)
 }
+/*
+// SDKs create mc func
+pub fn new(counter_value: &mut u32) -> SgxResult<Self> {
 
+        let mut counter_uuid = sgx_mc_uuid_t::default();
+        let ret = rsgx_create_monotonic_counter(&mut counter_uuid, counter_value);
+
+        match ret {
+            sgx_status_t::SGX_SUCCESS => Ok(SgxMonotonicCounter{
+                                            counter_uuid,
+                                            initflag: Cell::new(true),
+                                         }),
+            _ => Err(ret),
+        }
+    }
+// So for example...
+fn generate_mc_directly() -> Result<??> {
+    rsgx_create_monotonic_counter
+}
+*/
 fn create_pse_session(mc: SgxMonotonicCounter) -> Result<SgxMonotonicCounter> {
     rsgx_create_pse_session()?;
     Ok(mc)
