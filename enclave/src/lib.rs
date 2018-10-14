@@ -18,10 +18,11 @@ mod signer;
 mod sealer;
 mod sgx_time;
 mod constants;
+mod pse_session;
 mod monotonic_counter;
 
 pub use signer::sign_message;
-pub use sgx_time::sgx_time_sample;
+pub use sgx_time::sgx_time_sample; // TODO: rm when actual replay defense is in
 pub use monotonic_counter::{generate_zeroed_mc};
 pub use keygen::{generate_keypair, get_public_key, show_private_key};
 /*

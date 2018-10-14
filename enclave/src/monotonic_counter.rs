@@ -64,7 +64,6 @@ fn read_mc(mc: SgxMonotonicCounter) -> Result<u32> {
     Ok(mc.read()?)
 }
 
-// TODO: I need a reader monad in Rust to thread state - look into!
 fn close_pse_session(count: u32) -> Result<u32> {
     rsgx_close_pse_session()?;
     Ok(count)
