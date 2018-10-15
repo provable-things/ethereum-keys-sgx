@@ -1,70 +1,76 @@
 use std::result;
+use sgx_types::*;
 use error::EnclaveError;
 use sgx_tservice::sgxcounter::SgxMonotonicCounter;
+use pse_session::{create_pse_session, close_pse_session};
 use sgx_tservice::{rsgx_create_pse_session, rsgx_close_pse_session};
 
 type Result<T> = result::Result<T, EnclaveError>;
-/*
-Type: counter_uuid: sgx_mc_uuid_t
-TODO: get something that highlights all instances of a word in vim!
-TODO: find a way to move lines around like in vscode!
-*/
-pub fn generate_zeroed_mc() -> Result<SgxMonotonicCounter> {
-    generate_mc(0)
+
+pub struct MonotonicCounter {
+    pub value: u32,
+    pub id: sgx_mc_uuid_t,
 }
 
-pub fn get_mc_count(mc: SgxMonotonicCounter) -> Result<u32> {
-    create_pse_session(mc)
-        .and_then(read_mc)
+pub fn create_mc() -> Result<MonotonicCounter> {
+    create_pse_session()
+        .and_then(generate_zeroed_mc)
         .and_then(close_pse_session)
 }
 
-pub fn increment_mc_count(mc: SgxMonotonicCounter) -> Result<u32> {
-    create_pse_session(mc)
-        .and_then(increment_mc)
+pub fn read_mc(mc: MonotonicCounter) -> Result<u32> {
+    create_pse_session()
+        .and_then(|_| read_monotonic_counter(mc))
         .and_then(close_pse_session)
 }
 
-fn increment_mc(mc: SgxMonotonicCounter) -> Result<u32> {
-    Ok(mc.increment()?)
+pub fn increment_mc(mc: MonotonicCounter) -> Result<MonotonicCounter> {
+    create_pse_session()
+        .and_then(|_| increment_monotonic_counter(mc))
+        .and_then(close_pse_session)
 }
-// Note, looking at the actual function that creates the MC, it gets passed a pointer that
-// eventually holds the uuid of the counter itself. INVESTIGATE!
-// Proposal - rather than using this SDK's helper method, call sgx_create_monotonic_counter
-// direclty to attain the uuid. Then do as I please with it.
-fn generate_mc(mut count: u32) -> Result<SgxMonotonicCounter> {
-    Ok(SgxMonotonicCounter::new(&mut count)?)
+
+pub fn destroy_mc(mc: MonotonicCounter) -> Result<()> {
+    create_pse_session()
+        .and_then(|_| destroy_monotonic_counter(mc))
+        .and_then(close_pse_session)
 }
-/*
-// SDKs create mc func
-pub fn new(counter_value: &mut u32) -> SgxResult<Self> {
 
-        let mut counter_uuid = sgx_mc_uuid_t::default();
-        let ret = rsgx_create_monotonic_counter(&mut counter_uuid, counter_value);
+fn generate_zeroed_mc<T>(_t: T) -> Result<MonotonicCounter> {
+    generate_monotonic_counter(0)
+}
 
-        match ret {
-            sgx_status_t::SGX_SUCCESS => Ok(SgxMonotonicCounter{
-                                            counter_uuid,
-                                            initflag: Cell::new(true),
-                                         }),
-            _ => Err(ret),
-        }
+fn generate_monotonic_counter(mut init_value: u32) -> Result<MonotonicCounter> {
+    let mut counter_uuid = sgx_mc_uuid_t::default();
+    let ret_val = unsafe {sgx_create_monotonic_counter(&mut counter_uuid as * mut sgx_mc_uuid_t, init_value as * mut u32)};
+    match ret_val {
+        sgx_status_t::SGX_SUCCESS => Ok(MonotonicCounter{id: counter_uuid, value: init_value}),
+        _ => Err(EnclaveError::SGXError(ret_val))
     }
-// So for example...
-fn generate_mc_directly() -> Result<??> {
-    rsgx_create_monotonic_counter
-}
-*/
-fn create_pse_session(mc: SgxMonotonicCounter) -> Result<SgxMonotonicCounter> {
-    rsgx_create_pse_session()?;
-    Ok(mc)
 }
 
-fn read_mc(mc: SgxMonotonicCounter) -> Result<u32> {
-    Ok(mc.read()?)
+fn read_monotonic_counter(mut mc: MonotonicCounter) -> Result<u32> {
+    let mut counter_value: u32 = 0;
+    let ret_val = unsafe {sgx_read_monotonic_counter(&mut mc.id as * const sgx_mc_uuid_t, counter_value as * mut u32)};
+    match ret_val {
+        sgx_status_t::SGX_SUCCESS => Ok(counter_value),
+        _ => Err(EnclaveError::SGXError(ret_val))
+    }
 }
 
-fn close_pse_session(count: u32) -> Result<u32> {
-    rsgx_close_pse_session()?;
-    Ok(count)
+fn increment_monotonic_counter(mut mc: MonotonicCounter) -> Result<MonotonicCounter> { // Don't forget to resave the new returned struct in the keyfile!
+    let mut counter_value: u32 = 0;
+    let ret_val = unsafe {sgx_increment_monotonic_counter(&mut mc.id as * const sgx_mc_uuid_t, counter_value as * mut u32)};
+    match ret_val {
+        sgx_status_t::SGX_SUCCESS => Ok(MonotonicCounter{value: counter_value, id: mc.id}),
+        _ => Err(EnclaveError::SGXError(ret_val))
+    }
+}
+
+fn destroy_monotonic_counter(mut mc: MonotonicCounter) -> Result<()> {
+    let ret_val = unsafe {sgx_destroy_monotonic_counter(&mut mc.id as * const sgx_mc_uuid_t)};
+    match ret_val {
+        sgx_status_t::SGX_SUCCESS => Ok(()),
+        _ => Err(EnclaveError::SGXError(ret_val))
+    }
 }

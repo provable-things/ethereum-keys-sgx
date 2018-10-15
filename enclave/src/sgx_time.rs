@@ -37,7 +37,6 @@ pub extern "C" fn sgx_time_sample() -> sgx_status_t { // FIXME: get rid of this 
 fn get_sgx_time() -> Result<SgxTime> {
     create_pse_session()
         .and_then(get_sgx_time_struct)
-        // OR this lambda instead? .and_then(|_| Ok(SgxTime::now()?))
         .and_then(close_pse_session)
 }
 
