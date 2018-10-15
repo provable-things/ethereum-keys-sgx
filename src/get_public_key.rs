@@ -1,5 +1,6 @@
 use std::result;
 use error::AppError;
+use fs::write_keyfile;
 use self::key::PublicKey;
 use sgx_urts::SgxEnclave;
 use sgx_types::sgx_status_t;
@@ -12,17 +13,35 @@ use types::{ENCRYPTED_KEYPAIR_SIZE, EncryptedKeyPair};
 type Result<T> = result::Result<T, AppError>;
 
 pub fn run(path: &String) -> Result<PublicKey> {
-    get_key_from_enc(read_encrypted_keyfile(&path)?, init_enclave()?)
+    get_key_from_enc(read_encrypted_keyfile(&path)?, init_enclave()?, &path)
 }
 
-fn get_key_from_enc(mut keypair: EncryptedKeyPair, enc: SgxEnclave) -> Result<PublicKey> {
+/* || this version? Path might also be a candidate for the reader monad here? Do as a refactor?
+    init_enclave()
+        .and_then(|enc| get_key_from_enc(enc, &path)) // Then read the keyfile in the next func from the path, & return the path & keypair after for
+        .and_then(write_keyfile)
+*/
+
+fn get_key_from_enc(mut keypair: EncryptedKeyPair, enc: SgxEnclave, path: &String) -> Result<PublicKey> {
     let mut pub_key = PublicKey::new();
     let result = unsafe {
         get_public_key(enc.geteid(), &mut sgx_status_t::SGX_SUCCESS, &mut pub_key, &mut keypair[0] as *mut u8, ENCRYPTED_KEYPAIR_SIZE as *const u32)
     };
     enc.destroy();
+    
+    
+    // SO at the this point the keypair passed in have been overwritten by the new updated mc
+    // version! So can write it here if I want?
+    write_keyfile(&path, &keypair)?; // FIXME, function this out!THIS SHOULD BE IN THE OKAY ARM OF THE MATCH RESULT!!!!!!!!!!!!!!!!!!!<== 
+    // FIXME: Second access errors :/ Should test see if 2nd access also gets secret because if so,
+    // it's an MC error, if not, it's a overwrite-the-keyfile error. 
+    // Also should implement the destroy functionality to not use up the mcs!! Do that first!
+
     match result {
-        sgx_status_t::SGX_SUCCESS => Ok(pub_key),
+        sgx_status_t::SGX_SUCCESS => {
+            // WRITE FILE SHOULD GO HERE! Or we return the data to write in the next func?
+            Ok(pub_key)
+        },
         _ => Err(AppError::SGXError(result))
     }
 }

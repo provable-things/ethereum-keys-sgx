@@ -11,8 +11,9 @@ use self::utils::{keyfile_exists, print_hex, get_affirmation};
 use ethkey_sgx_app::{
     show_private_key, 
     generate_keypair, 
-    get_public_key, 
+    destroy_keypair,
     get_eth_address, 
+    get_public_key, 
     sign_message, 
     verify,
     utils
@@ -31,6 +32,7 @@ Usage:  ethkeysgx generate                                  [--keyfile=<path>]
         ethkeysgx show address                              [--keyfile=<path>] 
         ethkeysgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
         ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
+        ethkeysgx destroy                                   [--keyfile=<path>]
         ethkeysgx                                           [-h | --help]
 
 Options:
@@ -48,7 +50,9 @@ Commands:
     sign                ❍ Signs a passed in message using key pair provided, otherwise uses
                         default keypair if it exists. Defaults to using the ethereum message
                         prefix and ∴ signatures are ECRecoverable.
-    verify              ❍ Verify a given address signed a given message with a given signature. 
+   verify               ❍ Verify a given address signed a given message with a given signature. 
+   destroy              ❍ Destroys a given key file's monotonic counters, rendering the keyfile
+                        unusable. Use with caution!
 ";
 
 #[derive(Debug, Deserialize)]
@@ -59,6 +63,7 @@ struct Args {
     cmd_secret: bool,
     cmd_verify: bool,
     cmd_address: bool,
+    cmd_destroy: bool,
     cmd_generate: bool,
     flag_noprefix: bool,
     arg_message: String,
@@ -67,12 +72,7 @@ struct Args {
     arg_signature: String
 }
 /*
- * NOTE: tseal internal.rs has good info in it.
- * TODO: Use a monotonic counter attached to a tx signer to count number of signed txs.
- * TODO: Store the uuid of the MCs in the keyfile struct as well.
  * NOTE: Initial version of MC will be MRSIGNER not MRENCLAVE.
- * TODO: Could use the first MC to just count how many unseal events there have been?
- * TODO: OR just the number of times the private key has been shown?
  * TODO: Use SGX time to log the last time key file was accessed. (This & above need bigger key struc!)
  * TODO: Store address in hex in keyfile!
  * TODO: Show full ethereum address!
@@ -88,6 +88,7 @@ fn main() {
 
 fn execute(args: Args) -> () {
     match args {
+        Args {cmd_destroy: true, ..}  => destroy(args.flag_keyfile),
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
         Args {cmd_sign: true, ..}     => sign(args.flag_keyfile, args.arg_message, args.flag_noprefix),
         Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().unwrap(), args.arg_message, args.arg_signature, args.flag_noprefix), // FIXME: Unwrap! Plus rm 0x?
@@ -111,6 +112,22 @@ fn generate(path: String) -> () {
             match get_affirmation("This cannot be undone!".to_string()) {
                 false => println!("[-] Affirmation not received, exiting."),
                 true  => create_keypair(&path)
+            }
+        }
+    }
+}
+
+fn destroy(path: String) -> () {
+    match keyfile_exists(&path) {
+        false => println!("[-] Cannot destroy key, no keyfile found at {}", &path),
+        true  => {
+            println!("[!] WARNING! Key file at {} will be destroyed.\n", &path); 
+            match get_affirmation("This cannot be undone!".to_string()) {
+                false => println!("[-] Affirmation not received, exiting."),
+                true  => match destroy_keypair::run(&path) {
+                    Ok(_)  => (),
+                    Err(e) => println!("[-] Error destroying key pair: {}", e)
+                }
             }
         }
     }

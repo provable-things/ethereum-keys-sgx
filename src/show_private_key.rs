@@ -3,8 +3,8 @@ use error::AppError;
 use sgx_urts::SgxEnclave;
 use sgx_types::sgx_status_t;
 use init_enclave::init_enclave;
-use enclave_api::{show_private_key};
 use fs::read_encrypted_keyfile;
+use enclave_api::{show_private_key};
 use types::{ENCRYPTED_KEYPAIR_SIZE, EncryptedKeyPair};
 
 type Result<T> = result::Result<T, AppError>;

@@ -10,6 +10,7 @@ pub fn to_sealed_log<T: Copy + ContiguousMemory>(
         sealed_data.to_raw_sealed_data_t(sealed_log as * mut sgx_sealed_data_t, sealed_log_size)
     }
 }
+
 pub fn from_sealed_log<'a, T: Copy + ContiguousMemory>(
     sealed_log: * mut u8, 
     sealed_log_size: u32

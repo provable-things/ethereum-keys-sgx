@@ -23,16 +23,12 @@ mod monotonic_counter;
 
 pub use signer::sign_message;
 pub use sgx_time::sgx_time_sample; // TODO: rm when actual replay defense is in
-pub use monotonic_counter::{create_mc};
-pub use keygen::{generate_keypair, get_public_key, show_private_key};
+pub use keygen::{generate_keypair, get_public_key, show_private_key, destroy_key};
 /*
- * TODO: Change package name & stuff in Cargo.toml
  * TODO: Make VANITY keygen & threading work!
  * TODO: Can have app call generate, rec. priv key, then call gen again if not vanity.
- * TODO: Factor stuff out to a proper app style like the other keygen I made.
  * TODO: Factor out the unsealing!
  * TODO: Create better error handling for custom functions etc.
- * Then have method callable via ocall (add to edl!)
  * Note: MRENCLAVE signed = only THAT enc can unseal.
  * Note: MRSIGNER signed = other encs. by author can unseal.
  **/

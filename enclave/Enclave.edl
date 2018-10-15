@@ -31,5 +31,10 @@ enclave {
             [in, count=32] uint8_t *hashed_message,
             [out, count=65] uint8_t *signature
        );
+
+        public sgx_status_t destroy_key(
+            [in, size=sealed_log_size] uint8_t *sealed_log,
+            uint32_t sealed_log_size
+        );
     };
 };
