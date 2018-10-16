@@ -5,6 +5,8 @@
 More specifically, an Secp256k1 key pair generator & message signer where both the enclave _and_ the app are written in pure Rust. Made possible by the fantastic Rust SGX Software Developer Kit by Baidux Labs:
 https://github.com/baidu/rust-sgx-sdk
 
+__Update:__ Now with replay-attack protection!
+
 &nbsp;
 
 ## __:page_with_curl: CLI Usage:__
@@ -12,36 +14,38 @@ https://github.com/baidu/rust-sgx-sdk
 <!-- Can I link to the actual usage file here so it updates on changes? -->
 
 ```
-      Intel SGX Ethereum Key Management CLI.
-          Copyright: 2018 Oraclize.it
-          Questions: greg@oraclize.it
+    Intel SGX Ethereum Key Management CLI.
+        Copyright: 2018 Oraclize.it
+        Questions: greg@oraclize.it
 
-      Usage:  ethkeysgx generate                                  [--keyfile=<path>]
-              ethkeysgx show public                               [--keyfile=<path>]
-              ethkeysgx show secret                               [--keyfile=<path>]
-              ethkeysgx show address                              [--keyfile=<path>] 
-              ethkeysgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
-              ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
-              ethkeysgx [-h | --help]
+    Usage:  ethkeysgx generate                                  [--keyfile=<path>]
+            ethkeysgx show public                               [--keyfile=<path>]
+            ethkeysgx show secret                               [--keyfile=<path>]
+            ethkeysgx show address                              [--keyfile=<path>] 
+            ethkeysgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
+            ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
+            ethkeysgx destroy                                   [--keyfile=<path>]
+            ethkeysgx                                           [-h | --help]
 
-      Options:
-          -h, --help          ❍ Show this usage message.
-          --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
-          -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
-                              a signed message. Messages signed with no prefix are NOT ECRecoverable!
+    Options:
+        -h, --help          ❍ Show this usage message.
+        --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+        -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
+                            a signed message. Messages signed with no prefix are NOT ECRecoverable!
 
-      Commands:
-          generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
-                              them & saves to disk as either ./encrypted_keypair.txt in the
-                              current directory, or at the passed in path.
-          show public         ❍ Log the public key from the given encrypted keypair to the console.
-          show secret         ❍ Log the private key from the given encrypted keypair to the console.
-          sign                ❍ Signs a passed in message using key pair provided, otherwise uses
-                              default keypair if it exists. Defaults to using the ethereum message
-                              prefix and ∴ signatures are ECRecoverable.
-          verify              ❍ Verify a given address signed a given message with a given signature.
+    Commands:
+        generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
+                            them & saves to disk as either ./encrypted_keypair.txt in the
+                            current directory, or at the passed in path.
+        show public         ❍ Log the public key from the given encrypted keypair to the console.
+        show secret         ❍ Log the private key from the given encrypted keypair to the console.
+        sign                ❍ Signs a passed in message using key pair provided, otherwise uses
+                            default keypair if it exists. Defaults to using the ethereum message
+                            prefix and ∴ signatures are ECRecoverable.
+       verify               ❍ Verify a given address signed a given message with a given signature. 
+       destroy              ❍ Destroys a given key file's monotonic counters, rendering the keyfile
+                            unusable, before erasing the encrypted keyfile. Use with caution!
 ```
-
 &nbsp;
 
 ## __:wrench: Build it Yourself:__
@@ -133,7 +137,7 @@ _**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkeysgx`**_
 
 :black_square_button: Make threaded to have vanity addresses (can limit tried?)
 
-:black_square_button: Abstract out generic enclave funcs (mem. allocing etc)
+:white_check_mark: Abstract out generic enclave funcs (mem. allocing etc)
 
 :white_check_mark: Separate the app from the SDK repo enclave to make it lean and mean.
 
@@ -141,10 +145,11 @@ _**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkeysgx`**_
 
 :black_square_button: Make a stand alone binary for D/L.
 
-:black_square_button: Add a monotonic counter to the key accesses.
+:white_check_mark: Add a monotonic counter to the key accesses.
 
-:black_square_button: Add a monotonic counter to tx signing events.
+:white_check_mark: Add a monotonic counter to tx signing events.
 
+:white_check_mark: Add SGX time checks to stop replay attacks.
 
 &nbsp;
 

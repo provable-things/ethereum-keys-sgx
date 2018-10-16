@@ -52,7 +52,7 @@ Commands:
                         prefix and ∴ signatures are ECRecoverable.
    verify               ❍ Verify a given address signed a given message with a given signature. 
    destroy              ❍ Destroys a given key file's monotonic counters, rendering the keyfile
-                        unusable. Use with caution!
+                        unusable, before erasing the encrypted keyfile itself. Use with caution!
 ";
 
 #[derive(Debug, Deserialize)]
