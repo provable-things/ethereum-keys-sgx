@@ -16,7 +16,7 @@ enclave {
 
         public sgx_status_t get_public_key(
             [out, count=64] uint8_t *pub_key,
-            [in, size=sealed_log_size] uint8_t *sealed_log,
+            [in, out, size=sealed_log_size] uint8_t *sealed_log,
             uint32_t sealed_log_size
         );
 

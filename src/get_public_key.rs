@@ -28,18 +28,9 @@ fn get_key_from_enc(mut keypair: EncryptedKeyPair, enc: SgxEnclave, path: &Strin
         get_public_key(enc.geteid(), &mut sgx_status_t::SGX_SUCCESS, &mut pub_key, &mut keypair[0] as *mut u8, ENCRYPTED_KEYPAIR_SIZE as *const u32)
     };
     enc.destroy();
-    
-    
-    // SO at the this point the keypair passed in have been overwritten by the new updated mc
-    // version! So can write it here if I want?
-    write_keyfile(&path, &keypair)?; // FIXME, function this out!THIS SHOULD BE IN THE OKAY ARM OF THE MATCH RESULT!!!!!!!!!!!!!!!!!!!<== 
-    // FIXME: Second access errors :/ Should test see if 2nd access also gets secret because if so,
-    // it's an MC error, if not, it's a overwrite-the-keyfile error. 
-    // Also should implement the destroy functionality to not use up the mcs!! Do that first!
-
     match result {
         sgx_status_t::SGX_SUCCESS => {
-            // WRITE FILE SHOULD GO HERE! Or we return the data to write in the next func?
+            write_keyfile(&path, &keypair)?; // FIXME: Factor this out, have this main func return a tuple & go from there?
             Ok(pub_key)
         },
         _ => Err(AppError::SGXError(result))

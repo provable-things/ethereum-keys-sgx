@@ -31,8 +31,10 @@ pub extern "C" fn generate_keypair(
 ) -> sgx_status_t {
     let keypair = match KeyPair::new() {
         Ok(kp) => kp,
-        Err(_) => {return sgx_status_t::SGX_ERROR_UNEXPECTED;}
-        //Err(e) => {return e;} // FIXME: Propagate SGX errors to app properly!
+        Err(e) => {
+            println!("[-] Error creating new key pair: {}", e); //Err(e) => {return e;} // FIXME: Propagate SGX errors to app properly! Or will this do?
+            return sgx_status_t::SGX_ERROR_UNEXPECTED;
+        }
     };
     let aad: [u8; 0] = [0_u8; 0]; // Empty additional data...
     let sealed_data = match SgxSealedData::<KeyPair>::seal_data(&aad, &keypair) { // Seals the data
@@ -87,14 +89,13 @@ pub extern "C" fn destroy_key(
     // Seal and overwrite outside enc.
     let aad: [u8; 0] = [0_u8; 0]; // Empty additional data...
     let sealed_data = match SgxSealedData::<KeyPair>::seal_data(&aad, &kp) { // Seals the data
-        Ok(x) => x, // What are we doing with this?
+        Ok(x) => x, 
         Err(ret) => {return ret;}, 
     };
     let opt = to_sealed_log(&sealed_data, sealed_log, sealed_log_size); // Writes the data
     if opt.is_none() {
         return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;
     };
-
 
     sgx_status_t::SGX_SUCCESS
 }
@@ -117,46 +118,32 @@ pub extern "C" fn get_public_key(
         Err(ret) => {return ret;}, 
     };
     let keys: KeyPair = *unsealed_data.get_decrypt_txt();
-    
-
-
-    
-    match increment_accesses_mc(keys) {
-        Ok(kp)   => println!("[+] Keyfile accesses successfully incremented!\n[+] Number of key file accesses: {}", kp.accesses_mc.value),
+    let kp = match increment_accesses_mc(keys) {
+        Ok(kp)   => {
+            println!("[+] Keyfile accesses successfully incremented!\n[+] Number of key file accesses: {}", kp.accesses_mc.value);
+            kp
+        },
         Err(e) => {
             println!("Shouldn't be here! {}", e);
             return sgx_status_t::SGX_ERROR_UNEXPECTED; // FIXME: Propagate errors properly!
         }
     };
-
-
-
-
-    if verify_pair(keys) {
-        *pub_key_ptr = keys.public; // write the key to front end
-//        sgx_status_t::SGX_SUCCESS
+    if verify_pair(kp) {
+        *pub_key_ptr = kp.public; // write the key to front end
     } else {
         println!("[-] Public key not derivable from secret in unencrypted key file!"); // FIXME: Handle errors better in the enc.
         return sgx_status_t::SGX_ERROR_UNEXPECTED;
     }
-
-
     let aad: [u8; 0] = [0_u8; 0]; // Empty additional data...
-    let sealed_data = match SgxSealedData::<KeyPair>::seal_data(&aad, &keys) { // Seals the data
-        Ok(x) => x, // What are we doing with this?
+    let sealed_data = match SgxSealedData::<KeyPair>::seal_data(&aad, &kp) { // Seals the data
+        Ok(x) => x, 
         Err(ret) => {return ret;}, 
     };
     let opt = to_sealed_log(&sealed_data, sealed_log, sealed_log_size); // Writes the data
     if opt.is_none() {
         return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;
     };
-
-
-
-
-
     sgx_status_t::SGX_SUCCESS
-
 }
 
 #[no_mangle]
@@ -172,7 +159,7 @@ pub extern "C" fn show_private_key(
     let result = sealed_data.unseal_data();
     let unsealed_data = match result {
         Ok(x) => x,
-        Err(ret) => {println!("Think we're here! {}", ret);return ret;}, // Gives MAC_MISMATCH error! Either an actual MAC mismatch, or sealed data corruption. More likely the latter :S Edit, was the latter
+        Err(ret) => {println!("[-] Error unsealing data: {}", ret);return ret;} 
     };
     let keys: KeyPair = *unsealed_data.get_decrypt_txt();
     if verify_pair(keys) {

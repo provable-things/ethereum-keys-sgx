@@ -39,7 +39,6 @@ pub fn increment_signatures_mc(kp: KeyPair) -> Result<KeyPair> {
 
 pub fn destroy_mc(mc: MonotonicCounter) -> Result<()> {
     create_pse_session()
-        //.and_then(|_| verify_monotonic_counter(mc)) // Maybe unnecessary?
         .and_then(|_| destroy_monotonic_counter(mc))
         .and_then(close_pse_session)
 }
@@ -49,6 +48,7 @@ fn update_signatures_mc(mc: MonotonicCounter, kp: KeyPair) -> KeyPair { // FIXME
 }
 
 fn update_accesses_mc(mc: MonotonicCounter, kp: KeyPair) -> KeyPair { // FIXME: Inefficient! But functional...
+    println!("Here the accesses value mc should be more but it's not: {}", mc.value);
     KeyPair{secret: kp.secret, public: kp.public, accesses_mc: mc, signatures_mc: kp.signatures_mc}
 }
 
@@ -65,7 +65,7 @@ fn generate_zeroed_mc<T>(_t: T) -> Result<MonotonicCounter> {
 
 fn generate_monotonic_counter(mut init_value: u32) -> Result<MonotonicCounter> {
     let mut counter_uuid = sgx_mc_uuid_t::default();
-    let ret_val = unsafe {sgx_create_monotonic_counter(&mut counter_uuid, &mut init_value)}; // use _ex to finesse owner policy etc (defaukts to ??)
+    let ret_val = unsafe {sgx_create_monotonic_counter(&mut counter_uuid, &mut init_value)}; // FIXME: use _ex to finesse owner policy etc 
     match ret_val {
         sgx_status_t::SGX_SUCCESS => Ok(MonotonicCounter{id: counter_uuid, value: init_value}),
         _ => Err(EnclaveError::SGXError(ret_val))
@@ -77,7 +77,6 @@ fn verify_monotonic_counter(mut mc: MonotonicCounter) -> Result<u32> {
     let ret_val = unsafe {sgx_read_monotonic_counter(&mut mc.id as * const sgx_mc_uuid_t, &mut counter_value as * mut u32)};
     match ret_val {
         sgx_status_t::SGX_SUCCESS => {
-            println!("Counter value: {}\n mc struct value: {}", counter_value, mc.value);
             if counter_value != mc.value {Err(EnclaveError::Custom("[!] FATAL - MONOTONIC COUNTER MISMATCH!\n[-] ABORTING OPERATION!".to_string()))} else {Ok(counter_value)}
         },
         _ => {
@@ -91,7 +90,9 @@ fn increment_monotonic_counter(mut mc: MonotonicCounter) -> Result<MonotonicCoun
     let mut counter_value: u32 = 0;
     let ret_val = unsafe {sgx_increment_monotonic_counter(&mut mc.id as * const sgx_mc_uuid_t, &mut counter_value as * mut u32)};
     match ret_val {
-        sgx_status_t::SGX_SUCCESS => Ok(MonotonicCounter{value: counter_value, id: mc.id}),
+        sgx_status_t::SGX_SUCCESS => {
+            Ok(MonotonicCounter{value: counter_value, id: mc.id})
+        },
         _ => {
             println!("Or here?");
             Err(EnclaveError::SGXError(ret_val))
@@ -103,9 +104,6 @@ fn destroy_monotonic_counter(mut mc: MonotonicCounter) -> Result<()> {
     let ret_val = unsafe {sgx_destroy_monotonic_counter(&mut mc.id as * const sgx_mc_uuid_t)};
     match ret_val {
         sgx_status_t::SGX_SUCCESS => Ok(()),
-        _ => {
-            println!("Hopefully not here!");
-            Err(EnclaveError::SGXError(ret_val))
-        }
+        _ => Err(EnclaveError::SGXError(ret_val))
     }
 }
