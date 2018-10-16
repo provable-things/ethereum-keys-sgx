@@ -1,31 +1,16 @@
-use sgx_types::sgx_status_t;
-use sgx_tservice::{rsgx_close_pse_session, rsgx_create_pse_session, sgxtime};
+use std::result;
+use error::EnclaveError;
+use sgx_tservice::sgxtime::SgxTime;
+use pse_session::{create_pse_session, close_pse_session};
 
-#[no_mangle]
-pub extern "C" fn sgx_time_sample() -> sgx_status_t {
+type Result<T> = result::Result<T, EnclaveError>;
 
-    match rsgx_create_pse_session() {
-        Ok(_) => println!("Create PSE session done"),
-        _ => {
-            println!("Cannot create PSE session");
-            return sgx_status_t::SGX_ERROR_UNEXPECTED;
-        }
-    }
-    let ttime = sgxtime::SgxTime::now();
-    match ttime {
-        Ok(st) => println!("Ok with {:?}", st),
-        Err(x) => {
-            println!("Err with {}", x);
-            return sgx_status_t::SGX_ERROR_UNEXPECTED;
-        }
-    }
-    match rsgx_close_pse_session() {
-        Ok(_) => println!("close PSE session done"),
-        _ => {
-            println!("Cannot close PSE session");
-            return sgx_status_t::SGX_ERROR_UNEXPECTED;
-        }
-    }
-    
-    sgx_status_t::SGX_SUCCESS
+pub fn get_sgx_time() -> Result<SgxTime> {
+    create_pse_session()
+        .and_then(get_sgx_time_struct)
+        .and_then(close_pse_session)
+}
+
+fn get_sgx_time_struct<T>(_t: T) -> Result<SgxTime> {
+     Ok(SgxTime::now()?)
 }

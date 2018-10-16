@@ -18,20 +18,23 @@ mod signer;
 mod sealer;
 mod sgx_time;
 mod constants;
+mod pse_session;
+mod destroy_key;
+mod get_public_key;
+mod show_private_key;
+mod generate_keypair;
 mod monotonic_counter;
 
 pub use signer::sign_message;
-pub use sgx_time::sgx_time_sample;
-pub use monotonic_counter::{generate_zeroed_mc};
-pub use keygen::{generate_keypair, get_public_key, show_private_key};
+pub use destroy_key::destroy_key;
+pub use get_public_key::get_public_key;
+pub use generate_keypair::generate_keypair;
+pub use show_private_key::show_private_key;
 /*
- * TODO: Change package name & stuff in Cargo.toml
  * TODO: Make VANITY keygen & threading work!
  * TODO: Can have app call generate, rec. priv key, then call gen again if not vanity.
- * TODO: Factor stuff out to a proper app style like the other keygen I made.
  * TODO: Factor out the unsealing!
  * TODO: Create better error handling for custom functions etc.
- * Then have method callable via ocall (add to edl!)
  * Note: MRENCLAVE signed = only THAT enc can unseal.
  * Note: MRSIGNER signed = other encs. by author can unseal.
  **/
