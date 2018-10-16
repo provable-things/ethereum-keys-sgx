@@ -1,10 +1,9 @@
+use std::slice;
 use sgx_types::*;
 use keygen::KeyPair;
-use std::slice;
 use constants::HASH_LENGTH;
 use sealer::from_sealed_log;
 use secp256k1::{Message, Secp256k1};
-use sgx_tservice::sgxcounter::SgxMonotonicCounter;
 
 #[no_mangle]
 pub extern "C" fn sign_message(

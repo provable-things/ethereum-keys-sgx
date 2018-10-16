@@ -3,9 +3,7 @@ use sgx_types::*;
 use keygen::KeyPair;
 use error::EnclaveError;
 use std::string::ToString;
-use sgx_tservice::sgxcounter::SgxMonotonicCounter;  
 use pse_session::{create_pse_session, close_pse_session};
-use sgx_tservice::{rsgx_create_pse_session, rsgx_close_pse_session};
 
 type Result<T> = result::Result<T, EnclaveError>;
 

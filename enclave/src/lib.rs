@@ -19,10 +19,17 @@ mod sealer;
 mod sgx_time;
 mod constants;
 mod pse_session;
+mod destroy_key;
+mod get_public_key;
+mod show_private_key;
+mod generate_keypair;
 mod monotonic_counter;
 
 pub use signer::sign_message;
-pub use keygen::{generate_keypair, get_public_key, show_private_key, destroy_key};
+pub use destroy_key::destroy_key;
+pub use get_public_key::get_public_key;
+pub use generate_keypair::generate_keypair;
+pub use show_private_key::show_private_key;
 /*
  * TODO: Make VANITY keygen & threading work!
  * TODO: Can have app call generate, rec. priv key, then call gen again if not vanity.

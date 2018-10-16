@@ -58,7 +58,7 @@ impl From<secp256k1::Error> for EnclaveError {
 }
 
 impl From<SgxTimeError> for EnclaveError {
-    fn from(e: SgxTimeError) -> EnclaveError {
+    fn from(_e: SgxTimeError) -> EnclaveError {
         EnclaveError::SGXTimeError()
     }
 }

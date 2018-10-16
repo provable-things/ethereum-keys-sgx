@@ -1,6 +1,5 @@
 use std::result;
 use error::EnclaveError;
-use sgx_types::sgx_status_t;
 use sgx_tservice::sgxtime::SgxTime;
 use pse_session::{create_pse_session, close_pse_session};
 
