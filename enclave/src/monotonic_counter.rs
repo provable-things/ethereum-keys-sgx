@@ -44,12 +44,11 @@ pub fn destroy_mc(mc: MonotonicCounter) -> Result<()> {
 }
 
 fn update_signatures_mc(mc: MonotonicCounter, kp: KeyPair) -> KeyPair { // FIXME: Inefficient! But functional...
-    KeyPair{secret: kp.secret, public: kp.public, accesses_mc: kp.accesses_mc, signatures_mc: mc}
+    KeyPair{sgx_time: kp.sgx_time, secret: kp.secret, public: kp.public, accesses_mc: kp.accesses_mc, signatures_mc: mc}
 }
 
 fn update_accesses_mc(mc: MonotonicCounter, kp: KeyPair) -> KeyPair { // FIXME: Inefficient! But functional...
-    println!("Here the accesses value mc should be more but it's not: {}", mc.value);
-    KeyPair{secret: kp.secret, public: kp.public, accesses_mc: mc, signatures_mc: kp.signatures_mc}
+    KeyPair{sgx_time: kp.sgx_time, secret: kp.secret, public: kp.public, accesses_mc: mc, signatures_mc: kp.signatures_mc}
 }
 
 fn increment_mc(mc: MonotonicCounter) -> Result<MonotonicCounter> {
@@ -80,7 +79,6 @@ fn verify_monotonic_counter(mut mc: MonotonicCounter) -> Result<u32> {
             if counter_value != mc.value {Err(EnclaveError::Custom("[!] FATAL - MONOTONIC COUNTER MISMATCH!\n[-] ABORTING OPERATION!".to_string()))} else {Ok(counter_value)}
         },
         _ => {
-            println!("Here?");
             Err(EnclaveError::SGXError(ret_val))
         }
     }
@@ -94,7 +92,6 @@ fn increment_monotonic_counter(mut mc: MonotonicCounter) -> Result<MonotonicCoun
             Ok(MonotonicCounter{value: counter_value, id: mc.id})
         },
         _ => {
-            println!("Or here?");
             Err(EnclaveError::SGXError(ret_val))
         }
     }

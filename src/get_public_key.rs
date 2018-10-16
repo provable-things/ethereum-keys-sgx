@@ -1,13 +1,12 @@
 use std::result;
 use error::AppError;
-use fs::write_keyfile;
 use self::key::PublicKey;
 use sgx_urts::SgxEnclave;
 use sgx_types::sgx_status_t;
 use init_enclave::init_enclave;
-use fs::read_encrypted_keyfile;
 use secp256k1::{key, Secp256k1};
 use enclave_api::{get_public_key};
+use fs::{write_keyfile, read_encrypted_keyfile};
 use types::{ENCRYPTED_KEYPAIR_SIZE, EncryptedKeyPair};
 
 type Result<T> = result::Result<T, AppError>;

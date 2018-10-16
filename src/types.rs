@@ -1,6 +1,6 @@
 use std::mem::size_of;
 use secp256k1::key::{PublicKey, SecretKey};
-use sgx_types::{sgx_sealed_data_t, sgx_mc_uuid_t};
+use sgx_types::{sgx_sealed_data_t, sgx_mc_uuid_t, sgx_time_t, sgx_time_source_nonce_t};
 
 #[allow(dead_code)]
 pub struct MonotonicCounter {
@@ -9,7 +9,14 @@ pub struct MonotonicCounter {
 }
 
 #[allow(dead_code)]
+pub struct SgxTime {
+    timestamp: sgx_time_t,
+    source_nonce: sgx_time_source_nonce_t,
+}
+
+#[allow(dead_code)]
 pub struct KeyPair {
+    sgx_time: SgxTime,   
     public: PublicKey,
     secret: SecretKey,
     accesses_mc: MonotonicCounter,

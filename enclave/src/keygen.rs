@@ -3,12 +3,14 @@ use std::vec::Vec;
 use sgx_types::*;
 use error::EnclaveError;
 use secp256k1::Secp256k1;
+use sgx_time::get_sgx_time;
 use sgx_tseal::SgxSealedData;
 use sgx_rand::{Rng, thread_rng};
 use sgx_types::marker::ContiguousMemory;
 use secp256k1::key::{SecretKey, PublicKey};
 use sealer::{to_sealed_log, from_sealed_log};
 use monotonic_counter::{MonotonicCounter, destroy_mc, create_mc, increment_accesses_mc, increment_signatures_mc};
+use sgx_tservice::sgxtime::SgxTime;
 
 type Result<T> = result::Result<T, EnclaveError>;
 
@@ -16,6 +18,7 @@ type Result<T> = result::Result<T, EnclaveError>;
 
 #[derive(Copy, Clone)]
 pub struct KeyPair { // FIXME: Rename this to reflect what it is better! And instead of public everything, add some impls for reads!
+    pub sgx_time: SgxTime,   
     pub public: PublicKey,
     pub(crate) secret: SecretKey,
     pub accesses_mc: MonotonicCounter,
@@ -118,13 +121,54 @@ pub extern "C" fn get_public_key(
         Err(ret) => {return ret;}, 
     };
     let keys: KeyPair = *unsealed_data.get_decrypt_txt();
-    let kp = match increment_accesses_mc(keys) {
+   /*
+    // Check sgx time is later etc, then update the struct to the new one!
+    let keyfile_time_updated = match get_sgx_time() {
+        Ok(sgxt) => {
+            match sgxt::duration_since(keys.sgx_time) {
+                Ok(t) => {
+                    println!("[+] Keyfile last accessed {} seconds ago!", t);
+                    KeyPair{sgx_time: sgxt, secret: keys.secret, public: keys.public, accesses_mc: keys.accesses_mc, signatures_mc: keys.signatures_mc} // FIXME: Inefficient but functional...!
+                },
+                Err(e) => {
+                    println!("[-] Sgx Time Error: {}", e);
+                    return sgx_status_t::SGX_ERROR_UNEXPECTED;
+                }
+            }
+        },  
+        Err(e) => {
+            println!("[-] Sgx Time Error: {}", e)
+        }
+    };
+*/
+
+    let sgxt = match get_sgx_time() {
+        Ok(x) => x,
+        Err(e) => {
+            println!("[-] Sgx Time Error: {}", e);
+            return sgx_status_t::SGX_ERROR_UNEXPECTED;
+        }
+    };
+
+    match sgxt.duration_since(&keys.sgx_time) {
+        Ok(t) => {
+            println!("[+] Keyfile last accessed {} seconds ago!", t);
+        },
+        Err(e) => {
+            println!("[-] Sgx Time Error: {}", e);
+            return sgx_status_t::SGX_ERROR_UNEXPECTED;
+        }
+    };
+
+    let keyfile_time_updated: KeyPair = KeyPair{sgx_time: sgxt, secret: keys.secret, public: keys.public, accesses_mc: keys.accesses_mc, signatures_mc: keys.signatures_mc}; // FIXME: Inefficient but functional...!
+
+    let kp = match increment_accesses_mc(keyfile_time_updated) {
         Ok(kp)   => {
             println!("[+] Keyfile accesses successfully incremented!\n[+] Number of key file accesses: {}", kp.accesses_mc.value);
             kp
         },
         Err(e) => {
-            println!("Shouldn't be here! {}", e);
+            println!("[-] Error incrementing keyfile accesses {}", e);
             return sgx_status_t::SGX_ERROR_UNEXPECTED; // FIXME: Propagate errors properly!
         }
     };
@@ -162,8 +206,51 @@ pub extern "C" fn show_private_key(
         Err(ret) => {println!("[-] Error unsealing data: {}", ret);return ret;} 
     };
     let keys: KeyPair = *unsealed_data.get_decrypt_txt();
-    if verify_pair(keys) {
-        println!("[+] {:?}", keys.secret);
+
+    let sgxt = match get_sgx_time() {
+        Ok(x) => x,
+        Err(e) => {
+            println!("[-] Sgx Time Error: {}", e);
+            return sgx_status_t::SGX_ERROR_UNEXPECTED;
+        }
+    };
+
+    match sgxt.duration_since(&keys.sgx_time) {
+        Ok(t) => {
+            println!("[+] Keyfile last accessed {} seconds ago!", t);
+        },
+        Err(e) => {
+            println!("[-] Sgx Time Error: {}", e);
+            return sgx_status_t::SGX_ERROR_UNEXPECTED;
+        }
+    };
+
+    let keyfile_time_updated: KeyPair = KeyPair{sgx_time: sgxt, secret: keys.secret, public: keys.public, accesses_mc: keys.accesses_mc, signatures_mc: keys.signatures_mc}; // FIXME: Inefficient but functional...!
+
+
+    let kp = match increment_accesses_mc(keyfile_time_updated) {
+        Ok(kp)   => {
+            println!("[+] Number of keyfile accesses: {}", kp.accesses_mc.value);
+            kp
+        },
+        Err(e) => {
+            println!("[-] Error incrementing key file accesses: {}", e);
+            return sgx_status_t::SGX_ERROR_UNEXPECTED; // FIXME: Propagate errors properly!
+        }
+    };
+    
+    let aad: [u8; 0] = [0_u8; 0]; // Empty additional data...
+    let sealed_data = match SgxSealedData::<KeyPair>::seal_data(&aad, &kp) { // Seals the data
+        Ok(x) => x, 
+        Err(ret) => {return ret;}, 
+    };
+    let opt = to_sealed_log(&sealed_data, sealed_log, sealed_log_size); // Writes the data
+    if opt.is_none() {
+        return sgx_status_t::SGX_ERROR_INVALID_PARAMETER;
+    };
+
+    if verify_pair(kp) {
+        println!("[+] {:?}", kp.secret);
         sgx_status_t::SGX_SUCCESS
     } else {
         println!("[-] Public key not derivable from secret in unencrypted key file!"); // FIXME: Handle errors better in the enc.
@@ -174,10 +261,11 @@ pub extern "C" fn show_private_key(
 impl KeyPair {
     pub fn new() -> Result<KeyPair> {
         let s   = generate_random_priv_key()?;
-        let p   = get_public_key_from_secret(s);
+        let p   = get_public_key_from_secret(s); // FIXME: Are errors handled here?
+        let t   = get_sgx_time()?;
         let mc1 = create_mc()?;
         let mc2 = create_mc()?;
-        Ok(KeyPair{secret: s, public: p, accesses_mc: mc1, signatures_mc: mc2})
+        Ok(KeyPair{sgx_time: t, secret: s, public: p, accesses_mc: mc1, signatures_mc: mc2})
     }
 }
 
