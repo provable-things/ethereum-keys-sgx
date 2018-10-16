@@ -19,12 +19,6 @@ pub fn create_mc() -> Result<MonotonicCounter> {
         .and_then(close_pse_session)
 }
 
-pub fn read_mc(mc: MonotonicCounter) -> Result<u32> {
-    create_pse_session()
-        .and_then(|_| verify_monotonic_counter(mc))
-        .and_then(close_pse_session)
-}
-
 pub fn increment_accesses_mc(kp: KeyPair) -> Result<KeyPair> {
     increment_mc(kp.accesses_mc)
         .map(|mc| update_accesses_mc(mc, kp))
