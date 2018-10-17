@@ -14,13 +14,10 @@ pub fn show_time_since_last_access(kp: KeyPair) -> Result<KeyPair> {
 
 fn show_duration_since(sgxt: SgxTime, kp: KeyPair) -> Result<(KeyPair, SgxTime)> {
      match sgxt.duration_since(&kp.sgx_time) {
+        Err(e) => Err(EnclaveError::SGXTimeError()),
         Ok(t) => {
             println!("[+] Keyfile last accessed {} seconds ago!", t);
             Ok((kp, sgxt))
-        },
-        Err(e) => {
-            println!("[-] Sgx Time Error: {}", e); // FIXME: Do we need this?
-            Err(EnclaveError::SGXTimeError())
         }
     }
 }
