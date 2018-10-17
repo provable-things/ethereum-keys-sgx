@@ -35,6 +35,11 @@ pub fn destroy_mc(mc: MonotonicCounter) -> Result<()> {
         .and_then(close_pse_session)
 }
 
+pub fn log_keyfile_accesses(kp: KeyPair) -> Result<KeyPair> {
+    println!("[+] Number of key file accesses: {}", kp.accesses_mc.value);
+    Ok(kp)
+}
+
 fn increment_mc(mc: MonotonicCounter) -> Result<MonotonicCounter> {
     create_pse_session()
         .and_then(|_| verify_monotonic_counter(mc))

@@ -2,6 +2,7 @@ use std::result;
 use std::vec::Vec;
 use error::EnclaveError;
 use secp256k1::Secp256k1;
+use std::string::ToString;
 use sgx_time::get_sgx_time;
 use sgx_rand::{Rng, thread_rng};
 use sgx_tservice::sgxtime::SgxTime;
@@ -35,6 +36,13 @@ impl KeyPair {
 
 pub fn create_keypair() -> Result<KeyPair> {
     Ok(KeyPair::new()?)
+}
+// FIXME: Use this version instead of other once all changes are made!
+pub fn verify_keypair(kp: KeyPair) -> Result<KeyPair> {
+    match verify_pair(kp) {
+        true => Ok(kp),
+        false => Err(EnclaveError::Custom("[-] Public key not derivable from secret in unencrypted keyfile!".to_string()))
+    }
 }
 
 pub fn verify_pair(keys: KeyPair) -> bool { // NOTE: Can't impl. since decryption loses methods on structs obvs.
