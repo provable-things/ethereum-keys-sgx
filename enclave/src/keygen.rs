@@ -33,6 +33,10 @@ impl KeyPair {
     }
 }
 
+pub fn create_keypair() -> Result<KeyPair> {
+    Ok(KeyPair::new()?)
+}
+
 pub fn verify_pair(keys: KeyPair) -> bool { // NOTE: Can't impl. since decryption loses methods on structs obvs.
     keys.public == get_public_key_from_secret(keys.secret)
 }

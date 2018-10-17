@@ -62,3 +62,13 @@ impl From<SgxTimeError> for EnclaveError {
         EnclaveError::SGXTimeError()
     }
 }
+
+pub fn error_to_sgx_status(e: EnclaveError) -> sgx_status_t {
+    match e {
+        EnclaveError::SGXError(x) => x,
+        _ => {
+            println!("[-] Unexpected enclave error: {}", e);   
+            sgx_status_t::SGX_ERROR_UNEXPECTED
+        }
+    }
+}

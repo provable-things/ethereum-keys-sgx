@@ -37,3 +37,4 @@ fn get_encrypted_keypair(enc: SgxEnclave) -> Result<EncryptedKeyPair> {
         }
     }
 }
+
