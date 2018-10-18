@@ -1,5 +1,5 @@
 use sgx_types::*;
-use keygen::KeyStruct;
+use key_generator::KeyStruct;
 use sgx_tseal::SgxSealedData;
 use monotonic_counter::destroy_mc;
 use sealer::{to_sealed_log, from_sealed_log};
@@ -19,11 +19,11 @@ pub extern "C" fn destroy_key(
         Ok(x) => x,
         Err(ret) => {return ret;}, 
     };
-    let kp: KeyStruct = *unsealed_data.get_decrypt_txt();
+    let ks: KeyStruct = *unsealed_data.get_decrypt_txt();
 
 
     // Delete the mcs
-    match destroy_mc(kp.accesses_mc) { // Inefficient - sort out!
+    match destroy_mc(ks.accesses_mc) { // Inefficient - sort out!
         Ok(_)   => {
             println!("[+] Accesses monontonic counter successfully destroyed!");
         },
@@ -32,7 +32,7 @@ pub extern "C" fn destroy_key(
             return sgx_status_t::SGX_ERROR_UNEXPECTED;
         }
     }
-    match destroy_mc(kp.signatures_mc) { // Inefficient - sort out!
+    match destroy_mc(ks.signatures_mc) { // Inefficient - sort out!
         Ok(_)   => {
             println!("[+] Signatures monontonic counter successfully destroyed!");
         },
@@ -44,7 +44,7 @@ pub extern "C" fn destroy_key(
 
     // Seal and overwrite outside enc.
     let aad: [u8; 0] = [0_u8; 0]; // Empty additional data...
-    let sealed_data = match SgxSealedData::<KeyStruct>::seal_data(&aad, &kp) { // Seals the data
+    let sealed_data = match SgxSealedData::<KeyStruct>::seal_data(&aad, &ks) { // Seals the data
         Ok(x) => x, 
         Err(ret) => {return ret;}, 
     };

@@ -13,7 +13,7 @@ extern crate sgx_tcrypto;
 extern crate sgx_tservice;
 
 mod error;
-mod keygen;
+mod key_generator;
 mod signer;
 mod sealer;
 mod sgx_time;
@@ -31,7 +31,7 @@ pub use get_public_key::get_public_key;
 pub use generate_keypair::generate_keypair;
 pub use show_private_key::show_private_key;
 /*
- * TODO: Make VANITY keygen & threading work!
+ * TODO: Make VANITY key_generator & threading work!
  * TODO: Can have app call generate, rec. priv key, then call gen again if not vanity.
  * TODO: Factor out the unsealing!
  * TODO: Create better error handling for custom functions etc.
