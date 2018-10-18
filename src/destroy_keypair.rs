@@ -20,9 +20,9 @@ fn rm_keypair(path: &String) -> Result<()> {
 }
 
 fn destroy_key_mcs<'a>(enc: SgxEnclave, path: &'a String) -> Result<&'a String> { // use better lifetime!
-    let mut kp: EncryptedKeyStruct = read_encrypted_keyfile(&path)?;
+    let mut ks: EncryptedKeyStruct = read_encrypted_keyfile(&path)?;
     let ret_val = unsafe {
-        destroy_key(enc.geteid(), &mut sgx_status_t::SGX_SUCCESS, &mut kp[0] as *mut u8, ENCRYPTED_KEYPAIR_SIZE as *const u32)
+        destroy_key(enc.geteid(), &mut sgx_status_t::SGX_SUCCESS, &mut ks[0] as *mut u8, ENCRYPTED_KEYPAIR_SIZE as *const u32)
     };
     enc.destroy();
     match ret_val {

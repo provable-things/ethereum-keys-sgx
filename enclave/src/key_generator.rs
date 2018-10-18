@@ -24,24 +24,21 @@ pub struct KeyStruct {
 
 unsafe impl ContiguousMemory for KeyStruct{}
 
-impl KeyStruct {
-    pub fn new() -> Result<KeyStruct> {
-        let s   = generate_random_priv_key()?;
-        let p   = get_public_key_from_secret(s); // FIXME: Are errors handled here?
-        let t   = get_sgx_time()?;
-        let mc1 = create_mc()?;
-        let mc2 = create_mc()?;
-        Ok(KeyStruct{sgx_time: t, secret: s, public: p, accesses_mc: mc1, signatures_mc: mc2})
-    }
-}
-
 pub fn create_keypair() -> Result<KeyStruct> {
-    Ok(KeyStruct::new()?)
+    let s = generate_random_priv_key()?;
+    let p = get_public_key_from_secret(s);
+    Ok(KeyStruct{
+        secret: s, 
+        public: p, 
+        sgx_time: get_sgx_time()?, 
+        accesses_mc: create_mc()?,
+        signatures_mc: create_mc()?
+    })
 }
 
-pub fn verify_keypair(kp: KeyStruct) -> Result<KeyStruct> {
-    match kp.public == get_public_key_from_secret(kp.secret) {
-        true => Ok(kp),
+pub fn verify_keypair(ks: KeyStruct) -> Result<KeyStruct> {
+    match ks.public == get_public_key_from_secret(ks.secret) {
+        true => Ok(ks),
         false => Err(EnclaveError::Custom("[-] Public key not derivable from secret in unencrypted keyfile!".to_string()))
     }
 }

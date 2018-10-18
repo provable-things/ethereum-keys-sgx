@@ -12,7 +12,7 @@ type Result<T> = result::Result<T, AppError>;
 pub fn run(path: &String) -> Result<()> {
     init_enclave()
         .and_then(get_encrypted_keypair)
-        .and_then(|kp| save_keypair(kp, &path))
+        .and_then(|ks| save_keypair(ks, &path))
 }
 
 fn save_keypair(data: EncryptedKeyStruct, path: &String) -> Result<()> {

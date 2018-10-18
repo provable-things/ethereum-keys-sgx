@@ -19,14 +19,14 @@ pub fn create_mc() -> Result<MonotonicCounter> {
         .and_then(close_pse_session)
 }
 
-pub fn increment_accesses_mc(kp: KeyStruct) -> Result<KeyStruct> {
-    increment_mc(kp.accesses_mc)
-        .map(|mc| update_accesses_mc(mc, kp))
+pub fn increment_accesses_mc(ks: KeyStruct) -> Result<KeyStruct> {
+    increment_mc(ks.accesses_mc)
+        .map(|mc| update_accesses_mc(mc, ks))
 }
 
-pub fn increment_signatures_mc(kp: KeyStruct) -> Result<KeyStruct> {
-    increment_mc(kp.signatures_mc)
-        .map(|mc| update_signatures_mc(mc, kp))
+pub fn increment_signatures_mc(ks: KeyStruct) -> Result<KeyStruct> {
+    increment_mc(ks.signatures_mc)
+        .map(|mc| update_signatures_mc(mc, ks))
 }
 
 pub fn destroy_mc(mc: MonotonicCounter) -> Result<()> {
@@ -35,14 +35,14 @@ pub fn destroy_mc(mc: MonotonicCounter) -> Result<()> {
         .and_then(close_pse_session)
 }
 // FIXME: Make generic function for the following two?
-pub fn log_keyfile_accesses(kp: KeyStruct) -> Result<KeyStruct> {
-    println!("[+] Number of key file accesses: {}", kp.accesses_mc.value);
-    Ok(kp)
+pub fn log_keyfile_accesses(ks: KeyStruct) -> Result<KeyStruct> {
+    println!("[+] Number of key file accesses: {}", ks.accesses_mc.value);
+    Ok(ks)
 }
 
-pub fn log_keyfile_signatures(kp: KeyStruct) -> Result<KeyStruct> {
-    println!("[+] Number of signatures signed by this key: {}", kp.signatures_mc.value);
-    Ok(kp)
+pub fn log_keyfile_signatures(ks: KeyStruct) -> Result<KeyStruct> {
+    println!("[+] Number of signatures signed by this key: {}", ks.signatures_mc.value);
+    Ok(ks)
 }
 
 fn increment_mc(mc: MonotonicCounter) -> Result<MonotonicCounter> {
@@ -52,12 +52,12 @@ fn increment_mc(mc: MonotonicCounter) -> Result<MonotonicCounter> {
         .and_then(close_pse_session)
 }
 
-fn update_signatures_mc(mc: MonotonicCounter, kp: KeyStruct) -> KeyStruct {
-    KeyStruct{sgx_time: kp.sgx_time, secret: kp.secret, public: kp.public, accesses_mc: kp.accesses_mc, signatures_mc: mc}
+fn update_signatures_mc(mc: MonotonicCounter, ks: KeyStruct) -> KeyStruct {
+    KeyStruct{sgx_time: ks.sgx_time, secret: ks.secret, public: ks.public, accesses_mc: ks.accesses_mc, signatures_mc: mc}
 }
 
-fn update_accesses_mc(mc: MonotonicCounter, kp: KeyStruct) -> KeyStruct {
-    KeyStruct{sgx_time: kp.sgx_time, secret: kp.secret, public: kp.public, accesses_mc: mc, signatures_mc: kp.signatures_mc}
+fn update_accesses_mc(mc: MonotonicCounter, ks: KeyStruct) -> KeyStruct {
+    KeyStruct{sgx_time: ks.sgx_time, secret: ks.secret, public: ks.public, accesses_mc: mc, signatures_mc: ks.signatures_mc}
 }
 
 fn generate_zeroed_mc<T>(_t: T) -> Result<MonotonicCounter> {
