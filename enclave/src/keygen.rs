@@ -37,16 +37,12 @@ impl KeyPair {
 pub fn create_keypair() -> Result<KeyPair> {
     Ok(KeyPair::new()?)
 }
-// FIXME: Use this version instead of other once all changes are made!
+
 pub fn verify_keypair(kp: KeyPair) -> Result<KeyPair> {
-    match verify_pair(kp) {
+    match kp.public == get_public_key_from_secret(kp.secret) {
         true => Ok(kp),
         false => Err(EnclaveError::Custom("[-] Public key not derivable from secret in unencrypted keyfile!".to_string()))
     }
-}
-
-pub fn verify_pair(keys: KeyPair) -> bool { // NOTE: Can't impl. since decryption loses methods on structs obvs.
-    keys.public == get_public_key_from_secret(keys.secret)
 }
 
 fn generate_random_priv_key() -> Result<SecretKey> {

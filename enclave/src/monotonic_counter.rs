@@ -34,9 +34,14 @@ pub fn destroy_mc(mc: MonotonicCounter) -> Result<()> {
         .and_then(|_| destroy_monotonic_counter(mc))
         .and_then(close_pse_session)
 }
-
+// FIXME: Make generic function for the following two?
 pub fn log_keyfile_accesses(kp: KeyPair) -> Result<KeyPair> {
     println!("[+] Number of key file accesses: {}", kp.accesses_mc.value);
+    Ok(kp)
+}
+
+pub fn log_keyfile_signatures(kp: KeyPair) -> Result<KeyPair> {
+    println!("[+] Number of signatures signed by this key: {}", kp.signatures_mc.value);
     Ok(kp)
 }
 

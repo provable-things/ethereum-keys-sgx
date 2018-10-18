@@ -26,7 +26,7 @@ enclave {
         public sgx_status_t sign_message(
             [in, out, size=sealed_log_size] uint8_t *sealed_log,
             uint32_t sealed_log_size,
-            [in, count=32] uint8_t *hashed_message,
+            [in, count=32] uint8_t *hashed_message_ptr,
             [out, count=65] uint8_t *signature
         );
 

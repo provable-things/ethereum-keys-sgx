@@ -78,6 +78,7 @@ struct Args {
  * TODO: Show full ethereum address!
  * TODO: Add option to verify via the hash too?
  * TODO: Use MRENCLAVE to tie a sealed thingy to this specific enclave!
+ * TODO: Have a method to view the values of the mcs (should still increment the accesses obvs!)
  * */
 fn main() {
     Docopt::new(USAGE)
