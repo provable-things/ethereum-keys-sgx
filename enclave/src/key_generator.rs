@@ -3,12 +3,13 @@ use std::vec::Vec;
 use error::EnclaveError;
 use secp256k1::Secp256k1;
 use std::string::ToString;
-use sgx_time::get_sgx_time;
+use sealer::unseal_keypair;
 use sgx_rand::{Rng, thread_rng};
 use sgx_tservice::sgxtime::SgxTime;
 use sgx_types::marker::ContiguousMemory;
 use secp256k1::key::{SecretKey, PublicKey};
-use monotonic_counter::{MonotonicCounter, create_mc};
+use sgx_time::{get_sgx_time, show_time_since_last_access};
+use monotonic_counter::{MonotonicCounter, create_mc, increment_accesses_mc, log_keyfile_accesses};
 
 type Result<T> = result::Result<T, EnclaveError>;
 
@@ -43,6 +44,14 @@ pub fn verify_keypair(kp: KeyStruct) -> Result<KeyStruct> {
         true => Ok(kp),
         false => Err(EnclaveError::Custom("[-] Public key not derivable from secret in unencrypted keyfile!".to_string()))
     }
+}
+
+pub fn verify_key_and_update_accesses(sealed_log: * mut u8, sealed_log_size: u32) -> Result<KeyStruct> {
+    unseal_keypair(sealed_log, sealed_log_size) 
+        .and_then(verify_keypair)
+        .and_then(show_time_since_last_access)
+        .and_then(increment_accesses_mc)
+        .and_then(log_keyfile_accesses)
 }
 
 fn generate_random_priv_key() -> Result<SecretKey> {

@@ -1,8 +1,9 @@
 use std::result;
 use sgx_types::*;
-use keygen::KeyStruct;
+use key_generator::KeyStruct;
 use error::EnclaveError;
 use sgx_tseal::SgxSealedData;
+use error::error_to_sgx_status;
 use sgx_types::marker::ContiguousMemory;
 
 type Result<T> = result::Result<T, EnclaveError>;
@@ -21,6 +22,13 @@ pub fn unseal_keypair(sealed_log: * mut u8, sealed_log_size: u32) -> Result<KeyS
     match from_sealed_log::<KeyStruct>(sealed_log, sealed_log_size) {
         Some(data) => Ok(data.unseal_data().map(|unsealed_data| *unsealed_data.get_decrypt_txt())?),
         None       => Err(EnclaveError::SGXError(sgx_status_t::SGX_ERROR_INVALID_PARAMETER))
+    }
+}
+
+pub fn seal_and_return_sgx_status(sealed_log: *mut u8, sealed_log_size: u32, kp: KeyStruct) -> sgx_status_t {
+    match seal_keypair_no_additional_data(sealed_log, sealed_log_size, kp) {
+        Ok(_)  => sgx_status_t::SGX_SUCCESS,
+        Err(e) => error_to_sgx_status(e)
     }
 }
 

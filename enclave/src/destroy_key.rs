@@ -1,5 +1,5 @@
 use sgx_types::*;
-use keygen::KeyStruct;
+use key_generator::KeyStruct;
 use sgx_tseal::SgxSealedData;
 use monotonic_counter::destroy_mc;
 use sealer::{to_sealed_log, from_sealed_log};

@@ -1,6 +1,6 @@
 use std::result;
 use sgx_types::*;
-use keygen::KeyStruct;
+use key_generator::KeyStruct;
 use error::EnclaveError;
 use std::string::ToString;
 use pse_session::{create_pse_session, close_pse_session};

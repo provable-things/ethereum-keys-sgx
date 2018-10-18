@@ -1,5 +1,5 @@
 use std::result;
-use keygen::KeyStruct;
+use key_generator::KeyStruct;
 use error::EnclaveError;
 use sgx_tservice::sgxtime::SgxTime;
 use pse_session::{create_pse_session, close_pse_session};
