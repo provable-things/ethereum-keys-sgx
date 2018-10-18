@@ -7,7 +7,7 @@ use init_enclave::init_enclave;
 use secp256k1::{key, Secp256k1};
 use enclave_api::{get_public_key};
 use fs::{write_keyfile, read_encrypted_keyfile};
-use types::{ENCRYPTED_KEYPAIR_SIZE, EncryptedKeyPair};
+use types::{ENCRYPTED_KEYPAIR_SIZE, EncryptedKeyStruct};
 
 type Result<T> = result::Result<T, AppError>;
 
@@ -21,7 +21,7 @@ pub fn run(path: &String) -> Result<PublicKey> {
         .and_then(write_keyfile)
 */
 
-fn get_key_from_enc(mut keypair: EncryptedKeyPair, enc: SgxEnclave, path: &String) -> Result<PublicKey> {
+fn get_key_from_enc(mut keypair: EncryptedKeyStruct, enc: SgxEnclave, path: &String) -> Result<PublicKey> {
     let mut pub_key = PublicKey::new();
     let result = unsafe {
         get_public_key(enc.geteid(), &mut sgx_status_t::SGX_SUCCESS, &mut pub_key, &mut keypair[0] as *mut u8, ENCRYPTED_KEYPAIR_SIZE as *const u32)

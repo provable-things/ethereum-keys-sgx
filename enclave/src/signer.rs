@@ -3,7 +3,7 @@ use sgx_types::*;
 use constants::HASH_LENGTH;
 use error::error_to_sgx_status;
 use secp256k1::{Message, Secp256k1};
-use keygen::{KeyPair, verify_keypair};
+use keygen::{KeyStruct, verify_keypair};
 use sgx_time::show_time_since_last_access;
 use sealer::{unseal_keypair, seal_keypair_no_additional_data};
 use monotonic_counter::{log_keyfile_accesses, log_keyfile_signatures, increment_signatures_mc, increment_accesses_mc};
@@ -33,7 +33,7 @@ pub extern "C" fn sign_message(
     }
 }
 
-fn sign_msg_hash_slice<'a>((kp, hashed_msg): (KeyPair, &'a [u8])) -> (KeyPair, MessageSignature) { // FIXME: Make less imperative!
+fn sign_msg_hash_slice<'a>((kp, hashed_msg): (KeyStruct, &'a [u8])) -> (KeyStruct, MessageSignature) { // FIXME: Make less imperative!
     let mut x = [0u8; HASH_LENGTH];
     x.copy_from_slice(&hashed_msg[..]);
     let message = Message::from_slice(&x).expect("32 bytes"); // FIXME: handle better!
@@ -46,12 +46,12 @@ fn sign_msg_hash_slice<'a>((kp, hashed_msg): (KeyPair, &'a [u8])) -> (KeyPair, M
     (kp, data_arr)
 }
 
-fn write_msg_hash_outside_enclave(kp: KeyPair, signed_msg: MessageSignature, signature_ptr: &mut MessageSignature) -> KeyPair {
+fn write_msg_hash_outside_enclave(kp: KeyStruct, signed_msg: MessageSignature, signature_ptr: &mut MessageSignature) -> KeyStruct {
     *signature_ptr = signed_msg;
     kp
 }
 
-fn get_message_hash<'a>(kp: KeyPair, hash_ptr: *mut u8) -> (KeyPair, &'a [u8]) {
+fn get_message_hash<'a>(kp: KeyStruct, hash_ptr: *mut u8) -> (KeyStruct, &'a [u8]) {
     (kp, unsafe {slice::from_raw_parts(hash_ptr, HASH_LENGTH)})
 }
 

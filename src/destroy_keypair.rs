@@ -5,7 +5,7 @@ use fs::{delete_keyfile, read_encrypted_keyfile};
 use sgx_urts::SgxEnclave;
 use enclave_api::destroy_key;
 use init_enclave::init_enclave;
-use types::{EncryptedKeyPair, ENCRYPTED_KEYPAIR_SIZE};
+use types::{EncryptedKeyStruct, ENCRYPTED_KEYPAIR_SIZE};
 
 type Result<T> = result::Result<T, AppError>;
 
@@ -20,7 +20,7 @@ fn rm_keypair(path: &String) -> Result<()> {
 }
 
 fn destroy_key_mcs<'a>(enc: SgxEnclave, path: &'a String) -> Result<&'a String> { // use better lifetime!
-    let mut kp: EncryptedKeyPair = read_encrypted_keyfile(&path)?;
+    let mut kp: EncryptedKeyStruct = read_encrypted_keyfile(&path)?;
     let ret_val = unsafe {
         destroy_key(enc.geteid(), &mut sgx_status_t::SGX_SUCCESS, &mut kp[0] as *mut u8, ENCRYPTED_KEYPAIR_SIZE as *const u32)
     };
@@ -37,8 +37,8 @@ fn destroy_key_mcs<'a>(enc: SgxEnclave, path: &'a String) -> Result<&'a String> 
     }
 }
 /*
-fn get_encrypted_keypair(enc: SgxEnclave) -> Result<EncryptedKeyPair> {
-    let mut encrypted_keys: EncryptedKeyPair = vec![0u8; ENCRYPTED_KEYPAIR_SIZE];
+fn get_encrypted_keypair(enc: SgxEnclave) -> Result<EncryptedKeyStruct> {
+    let mut encrypted_keys: EncryptedKeyStruct = vec![0u8; ENCRYPTED_KEYPAIR_SIZE];
     let ptr: *mut u8 = &mut encrypted_keys[0];
     let result = unsafe {
         generate_keypair(enc.geteid(), &mut sgx_status_t::SGX_SUCCESS, ptr, ENCRYPTED_KEYPAIR_SIZE as *const u32)
@@ -56,7 +56,7 @@ fn get_encrypted_keypair(enc: SgxEnclave) -> Result<EncryptedKeyPair> {
     }
 }
 
-fn get_key_from_enc(mut keypair: EncryptedKeyPair, enc: SgxEnclave, path: &String) -> Result<PublicKey> {
+fn get_key_from_enc(mut keypair: EncryptedKeyStruct, enc: SgxEnclave, path: &String) -> Result<PublicKey> {
     let mut pub_key = PublicKey::new();
     let result = unsafe {
         get_public_key(enc.geteid(), &mut sgx_status_t::SGX_SUCCESS, &mut pub_key, &mut keypair[0] as *mut u8, ENCRYPTED_KEYPAIR_SIZE as *const u32)

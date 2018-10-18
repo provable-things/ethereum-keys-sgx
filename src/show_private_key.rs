@@ -5,7 +5,7 @@ use sgx_types::sgx_status_t;
 use init_enclave::init_enclave;
 use enclave_api::{show_private_key};
 use fs::{read_encrypted_keyfile, write_keyfile};
-use types::{ENCRYPTED_KEYPAIR_SIZE, EncryptedKeyPair};
+use types::{ENCRYPTED_KEYPAIR_SIZE, EncryptedKeyStruct};
 
 type Result<T> = result::Result<T, AppError>;
 
@@ -13,7 +13,7 @@ pub fn run(path: &String) -> Result<()> {
     show_key_via_enc(read_encrypted_keyfile(&path)?, init_enclave()?, path) // FIXME: make more functional, pass path in only once and read it from inside next func?
 }
 
-fn show_key_via_enc(mut keypair: EncryptedKeyPair, enc: SgxEnclave, path: &String) -> Result<()> {
+fn show_key_via_enc(mut keypair: EncryptedKeyStruct, enc: SgxEnclave, path: &String) -> Result<()> {
     let ret_val = unsafe {
         show_private_key(enc.geteid(), &mut sgx_status_t::SGX_SUCCESS, &mut keypair[0] as *mut u8, ENCRYPTED_KEYPAIR_SIZE as *const u32)
     };

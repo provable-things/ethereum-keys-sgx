@@ -2,7 +2,7 @@ use std::fs;
 use std::result;
 use std::path::Path;
 use error::AppError;
-use types::EncryptedKeyPair;
+use types::EncryptedKeyStruct;
 
 type Result<T> = result::Result<T, AppError>;
 
@@ -14,11 +14,11 @@ pub fn delete_keyfile(path: &String) -> Result<()> {
     Ok(fs::remove_file(path)?) 
 }
 
-pub fn write_keyfile(path: &str, data: &EncryptedKeyPair) -> Result<()> {
+pub fn write_keyfile(path: &str, data: &EncryptedKeyStruct) -> Result<()> {
     Ok(fs::write(path, data)?)
 }
 
-pub fn read_encrypted_keyfile(path: &String) -> Result<EncryptedKeyPair> {
+pub fn read_encrypted_keyfile(path: &String) -> Result<EncryptedKeyStruct> {
     Ok(fs::read(path)?)
 }
 

@@ -1,6 +1,6 @@
 use sgx_types::*;
 use error::error_to_sgx_status;
-use keygen::{KeyPair, verify_keypair};
+use keygen::{KeyStruct, verify_keypair};
 use sgx_time::show_time_since_last_access;
 use sealer::{unseal_keypair, seal_keypair_no_additional_data};
 use monotonic_counter::{log_keyfile_accesses, increment_accesses_mc};
@@ -22,7 +22,7 @@ pub extern "C" fn show_private_key(
     }
 }
 
-fn show_secret(kp: KeyPair) -> KeyPair {
+fn show_secret(kp: KeyStruct) -> KeyStruct {
     println!("[+] {:?}", kp.secret);
     kp    
 }

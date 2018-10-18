@@ -13,7 +13,7 @@ use monotonic_counter::{MonotonicCounter, create_mc};
 type Result<T> = result::Result<T, EnclaveError>;
 
 #[derive(Copy, Clone)]
-pub struct KeyPair { // FIXME: Rename this to reflect what it is better! And instead of public everything, add some impls for reads!
+pub struct KeyStruct {
     pub sgx_time: SgxTime,   
     pub public: PublicKey,
     pub(crate) secret: SecretKey,
@@ -21,24 +21,24 @@ pub struct KeyPair { // FIXME: Rename this to reflect what it is better! And ins
     pub signatures_mc: MonotonicCounter
 }
 
-unsafe impl ContiguousMemory for KeyPair{}
+unsafe impl ContiguousMemory for KeyStruct{}
 
-impl KeyPair {
-    pub fn new() -> Result<KeyPair> {
+impl KeyStruct {
+    pub fn new() -> Result<KeyStruct> {
         let s   = generate_random_priv_key()?;
         let p   = get_public_key_from_secret(s); // FIXME: Are errors handled here?
         let t   = get_sgx_time()?;
         let mc1 = create_mc()?;
         let mc2 = create_mc()?;
-        Ok(KeyPair{sgx_time: t, secret: s, public: p, accesses_mc: mc1, signatures_mc: mc2})
+        Ok(KeyStruct{sgx_time: t, secret: s, public: p, accesses_mc: mc1, signatures_mc: mc2})
     }
 }
 
-pub fn create_keypair() -> Result<KeyPair> {
-    Ok(KeyPair::new()?)
+pub fn create_keypair() -> Result<KeyStruct> {
+    Ok(KeyStruct::new()?)
 }
 
-pub fn verify_keypair(kp: KeyPair) -> Result<KeyPair> {
+pub fn verify_keypair(kp: KeyStruct) -> Result<KeyStruct> {
     match kp.public == get_public_key_from_secret(kp.secret) {
         true => Ok(kp),
         false => Err(EnclaveError::Custom("[-] Public key not derivable from secret in unencrypted keyfile!".to_string()))

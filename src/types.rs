@@ -15,7 +15,7 @@ pub struct SgxTime {
 }
 
 #[allow(dead_code)]
-pub struct KeyPair {
+pub struct KeyStruct {
     sgx_time: SgxTime,   
     public: PublicKey,
     secret: SecretKey,
@@ -24,5 +24,5 @@ pub struct KeyPair {
 }
 
 pub type MessageSignature = [u8;65];
-pub type EncryptedKeyPair = Vec<u8>;
-pub static ENCRYPTED_KEYPAIR_SIZE: usize = size_of::<sgx_sealed_data_t>() + size_of::<KeyPair>();
+pub type EncryptedKeyStruct = Vec<u8>;
+pub static ENCRYPTED_KEYPAIR_SIZE: usize = size_of::<sgx_sealed_data_t>() + size_of::<KeyStruct>();

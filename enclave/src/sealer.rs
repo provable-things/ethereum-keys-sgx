@@ -1,6 +1,6 @@
 use std::result;
 use sgx_types::*;
-use keygen::KeyPair;
+use keygen::KeyStruct;
 use error::EnclaveError;
 use sgx_tseal::SgxSealedData;
 use sgx_types::marker::ContiguousMemory;
@@ -8,24 +8,24 @@ use sgx_types::marker::ContiguousMemory;
 type Result<T> = result::Result<T, EnclaveError>;
 
 #[allow(dead_code)]
-pub fn seal_keypair_with_additional_data(sealed_log: * mut u8, sealed_log_size: u32, kp: KeyPair, add_data_slice: &[u8]) -> Result<sgx_status_t> {
+pub fn seal_keypair_with_additional_data(sealed_log: * mut u8, sealed_log_size: u32, kp: KeyStruct, add_data_slice: &[u8]) -> Result<sgx_status_t> {
     Ok(seal_keypair(sealed_log, sealed_log_size, kp, add_data_slice)?)
 }
 
-pub fn seal_keypair_no_additional_data(sealed_log: * mut u8, sealed_log_size: u32, kp: KeyPair) -> Result<sgx_status_t> {
+pub fn seal_keypair_no_additional_data(sealed_log: * mut u8, sealed_log_size: u32, kp: KeyStruct) -> Result<sgx_status_t> {
     Ok(seal_keypair(sealed_log, sealed_log_size, kp, &[0_u8; 0])?)
 }
 
 
-pub fn unseal_keypair(sealed_log: * mut u8, sealed_log_size: u32) -> Result<KeyPair> {
-    match from_sealed_log::<KeyPair>(sealed_log, sealed_log_size) {
+pub fn unseal_keypair(sealed_log: * mut u8, sealed_log_size: u32) -> Result<KeyStruct> {
+    match from_sealed_log::<KeyStruct>(sealed_log, sealed_log_size) {
         Some(data) => Ok(data.unseal_data().map(|unsealed_data| *unsealed_data.get_decrypt_txt())?),
         None       => Err(EnclaveError::SGXError(sgx_status_t::SGX_ERROR_INVALID_PARAMETER))
     }
 }
 
-fn seal_keypair(sealed_log: * mut u8, sealed_log_size: u32, kp: KeyPair, add_data_slice: &[u8]) -> Result<sgx_status_t> {
-    match to_sealed_log(&SgxSealedData::<KeyPair>::seal_data(&add_data_slice, &kp)?, sealed_log, sealed_log_size) { // FIXME: Make more functional & less gross...
+fn seal_keypair(sealed_log: * mut u8, sealed_log_size: u32, kp: KeyStruct, add_data_slice: &[u8]) -> Result<sgx_status_t> {
+    match to_sealed_log(&SgxSealedData::<KeyStruct>::seal_data(&add_data_slice, &kp)?, sealed_log, sealed_log_size) { // FIXME: Make more functional & less gross...
         Some(_) => Ok(sgx_status_t::SGX_SUCCESS),
         None    => Err(EnclaveError::SGXError(sgx_status_t::SGX_ERROR_INVALID_PARAMETER))
     }

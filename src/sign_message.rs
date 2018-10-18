@@ -6,7 +6,7 @@ use enclave_api::sign_message;
 use init_enclave::init_enclave;
 use keccak::{hash_slice, hash_with_prefix};
 use fs::{read_encrypted_keyfile, write_keyfile};
-use types::{MessageSignature, EncryptedKeyPair, ENCRYPTED_KEYPAIR_SIZE};
+use types::{MessageSignature, EncryptedKeyStruct, ENCRYPTED_KEYPAIR_SIZE};
 
 type Result<T> = result::Result<T, AppError>;
 
@@ -19,7 +19,7 @@ pub fn run(path: &String, message: String, no_prefix: bool) -> Result<MessageSig
     )
 }
 
-fn sign_hashed_message(mut keypair: EncryptedKeyPair, mut hashed_message: [u8;32], enc: SgxEnclave, path: &String) -> Result<MessageSignature> {
+fn sign_hashed_message(mut keypair: EncryptedKeyStruct, mut hashed_message: [u8;32], enc: SgxEnclave, path: &String) -> Result<MessageSignature> {
     let mut signature: MessageSignature = [0u8;65];
     let result = unsafe {
         sign_message(
