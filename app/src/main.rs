@@ -30,7 +30,8 @@ Usage:  ethkey_sgx generate                                  [--keyfile=<path>]
         ethkey_sgx show public                               [--keyfile=<path>]
         ethkey_sgx show secret                               [--keyfile=<path>]
         ethkey_sgx show address                              [--keyfile=<path>] 
-        ethkey_sgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
+        ethkey_sgx sign tx                                   [--keyfile=<path>] 
+        ethkey_sgx sign msg <message>                        [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx destroy                                   [--keyfile=<path>]
         ethkey_sgx                                           [-h | --help]
@@ -47,7 +48,8 @@ Commands:
                         current directory, or at the passed in path.
     show public         ❍ Log the public key from the given encrypted keypair to the console.
     show secret         ❍ Log the private key from the given encrypted keypair to the console.
-    sign                ❍ Signs a passed in message using key pair provided, otherwise uses
+    sign tx             ❍ Signs a transaction: WIP
+    sign msg            ❍ Signs a passed in message using key pair provided, otherwise uses
                         default keypair if it exists. Defaults to using the ethereum message
                         prefix and ∴ signatures are ECRecoverable.
    verify               ❍ Verify a given address signed a given message with a given signature. 
@@ -57,6 +59,8 @@ Commands:
 
 #[derive(Debug, Deserialize)]
 struct Args {
+    cmd_tx: bool,
+    cmd_msg: bool,
     cmd_sign: bool,
     cmd_show: bool,
     cmd_public: bool,
@@ -89,20 +93,30 @@ fn main() {
 
 fn execute(args: Args) -> () {
     match args {
+        Args {cmd_show: true, ..}     => match_show(args),
+        Args {cmd_sign: true, ..}     => match_sign(args), 
         Args {cmd_destroy: true, ..}  => destroy(args.flag_keyfile),
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
-        Args {cmd_sign: true, ..}     => sign(args.flag_keyfile, args.arg_message, args.flag_noprefix),
-        Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().unwrap(), args.arg_message, args.arg_signature, args.flag_noprefix), // FIXME: Unwrap! Plus rm 0x?
-        Args {cmd_show: true, ..}     => {
-            match args {
-                Args {cmd_public: true, ..}  => show_pub(args.flag_keyfile),
-                Args {cmd_secret: true, ..}  => show_priv(args.flag_keyfile),
-                Args {cmd_address: true, ..} => show_addr(args.flag_keyfile),
-                _ => println!("{}", USAGE)
-            }
-        },
+        Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().unwrap(), args.arg_message, args.arg_signature, args.flag_noprefix), // FIXME: Fix the unwrap! 
         _ => println!("{}", USAGE)
-    };
+    }
+}
+
+fn match_show(args: Args) -> () {
+    match args {
+        Args {cmd_public: true, ..}  => show_pub(args.flag_keyfile),
+        Args {cmd_secret: true, ..}  => show_priv(args.flag_keyfile),
+        Args {cmd_address: true, ..} => show_addr(args.flag_keyfile),
+        _ => println!("{}", USAGE)
+    }
+}
+
+fn match_sign(args: Args) -> () {
+    match args {
+        Args {cmd_msg: true, ..} => sign(args.flag_keyfile, args.arg_message, args.flag_noprefix),
+        Args {cmd_tx: true, ..}  => println!("Signing transaction now sir :P"),
+        _ => println!("{}", USAGE)
+    }
 }
 
 fn generate(path: String) -> () {
