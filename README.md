@@ -18,14 +18,14 @@ __Update:__ Now with replay-attack protection!
         Copyright: 2018 Oraclize.it
         Questions: greg@oraclize.it
 
-    Usage:  ethkeysgx generate                                  [--keyfile=<path>]
-            ethkeysgx show public                               [--keyfile=<path>]
-            ethkeysgx show secret                               [--keyfile=<path>]
-            ethkeysgx show address                              [--keyfile=<path>] 
-            ethkeysgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
-            ethkeysgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
-            ethkeysgx destroy                                   [--keyfile=<path>]
-            ethkeysgx                                           [-h | --help]
+    Usage:  ethkey_sgx generate                                  [--keyfile=<path>]
+            ethkey_sgx show public                               [--keyfile=<path>]
+            ethkey_sgx show secret                               [--keyfile=<path>]
+            ethkey_sgx show address                              [--keyfile=<path>] 
+            ethkey_sgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
+            ethkey_sgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
+            ethkey_sgx destroy                                   [--keyfile=<path>]
+            ethkey_sgx                                           [-h | --help]
 
     Options:
         -h, --help          ❍ Show this usage message.
@@ -113,7 +113,7 @@ _**`❍ sgx-nuc-docker@~/keygen# make`**_
 
 And finally run it to see the usage notes:
 
-_**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkeysgx`**_
+_**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkey_sgx`**_
 
 &nbsp;
 
