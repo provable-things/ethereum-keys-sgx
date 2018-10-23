@@ -1,3 +1,4 @@
+extern crate rlp;
 extern crate dirs;
 extern crate sgx_urts;
 extern crate rustc_hex;
@@ -20,4 +21,5 @@ pub mod get_public_key;
 pub mod destroy_keypair;
 pub mod get_eth_address;
 pub mod show_private_key;
+pub mod sign_transaction;
 pub mod generate_keypair;

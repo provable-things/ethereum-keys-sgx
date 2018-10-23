@@ -23,6 +23,7 @@ pub struct KeyStruct {
     signatures_mc: MonotonicCounter
 }
 
-pub type MessageSignature = [u8;65];
+pub type Hash = [u8;32];
+pub type Signature = [u8;65];
 pub type EncryptedKeyStruct = Vec<u8>;
 pub static ENCRYPTED_KEYPAIR_SIZE: usize = size_of::<sgx_sealed_data_t>() + size_of::<KeyStruct>();

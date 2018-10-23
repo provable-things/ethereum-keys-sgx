@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["gregkapka <greg@oraclize.it>"]
 
 [dependencies]
+rlp = "0.3.0"
 dirs = "1.0.2"
 rustc-hex = "2.0.1"
 tiny-keccak = "1.4"

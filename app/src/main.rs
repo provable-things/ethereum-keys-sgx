@@ -6,10 +6,12 @@ extern crate ethereum_types;
 extern crate ethkey_sgx_app;
 
 use docopt::Docopt;
-use ethereum_types::Address;
+use self::sign_transaction::Transaction;
+use ethereum_types::{Address, U256, H160};
 use self::utils::{keyfile_exists, print_hex, get_affirmation};
 use ethkey_sgx_app::{
-    show_private_key, 
+    show_private_key,
+    sign_transaction,
     generate_keypair, 
     destroy_keypair,
     get_eth_address, 
@@ -34,7 +36,7 @@ Usage:  ethkey_sgx                                              [-h | --help]
         ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx destroy                                      [--keyfile=<path>]
-        ethkey_sgx sign tx [--value=<Wei>] [--gaslimit=<uint>] [--keyfile=<path>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>]
+        ethkey_sgx sign tx [--to=<address>] [--value=<Wei>] [--gaslimit=<uint>] [--keyfile=<path>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
 
 Commands:
     generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
@@ -55,11 +57,15 @@ Options:
 
     --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
 
+    --to=<Address>      ❍ Destination address of transaction [default: ]
+
     --value=<Wei>       ❍ Amount of ether to send with transaction in Wei [default: 0]
 
     --gaslimit=<uint>   ❍ Amount of gas to send with transaction [default: 210000]
 
     --gasprice=<Wei>    ❍ Gas price for transaction in Wei [default: 20000000000]
+
+    --chainid=<uint>    ❍ ID of desired chain for transaction [default: 1]
 
     --nonce=<uint>      ❍ Nonce of transaction in Wei [default: 0]
 
@@ -79,9 +85,11 @@ struct Args {
     cmd_show: bool,
     flag_value: u64,
     flag_nonce: u64,
+    flag_to: String,
     cmd_public: bool,
     cmd_secret: bool,
     cmd_verify: bool,
+    flag_chainid: u64,
     cmd_address: bool,
     cmd_destroy: bool,
     flag_data: String,
@@ -116,7 +124,7 @@ fn execute(args: Args) -> () {
         Args {cmd_sign: true, ..}     => match_sign(args), 
         Args {cmd_destroy: true, ..}  => destroy(args.flag_keyfile),
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
-        Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().unwrap(), args.arg_message, args.arg_signature, args.flag_noprefix), // FIXME: Fix the unwrap! 
+        Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().expect("Invalid ethereum address!"), args.arg_message, args.arg_signature, args.flag_noprefix),  
         _ => println!("{}", USAGE)
     }
 }
@@ -132,8 +140,15 @@ fn match_show(args: Args) -> () {
 
 fn match_sign(args: Args) -> () {
     match args {
-        Args {cmd_msg: true, ..} => sign(args.flag_keyfile, args.arg_message, args.flag_noprefix),
-        Args {cmd_tx: true, ..}  => println!("Signing transaction now sir :P"),
+        Args {cmd_msg: true, ..} => sign_msg(args.flag_keyfile, args.arg_message, args.flag_noprefix),
+        Args {cmd_tx: true, ..}  => sign_tx(args.flag_keyfile, args.flag_chainid, Transaction{
+            nonce: U256::from(args.flag_nonce), 
+            value: U256::from(args.flag_value), 
+            data: args.flag_data.as_bytes().to_vec(),
+            gas_limit: U256::from(args.flag_gaslimit), 
+            gas_price: U256::from(args.flag_gasprice),
+            to: if args.flag_to.len() == 0 {H160::zero()} else {args.flag_to.parse().expect("Invalid ethereum address!")}
+        }),
         _ => println!("{}", USAGE)
     }
 }
@@ -186,7 +201,14 @@ fn create_keypair(path: &String) -> (){
     };
 }
 
-fn sign(path: String, message: String, no_prefix: bool) -> () {
+fn sign_tx(path: String, chain_id: u64, tx: Transaction) -> () {
+    match sign_transaction::run(path, chain_id, tx) {
+        Ok(sig) => {println!("[+] Transaction signature: ");print_hex(sig.to_vec())}
+        Err(e)  => println!("[-] Error signing transaction:\n\t{:?}", e)
+    }
+}
+
+fn sign_msg(path: String, message: String, no_prefix: bool) -> () {
     match sign_message::run(&path, message, no_prefix) {
         Err(e) => println!("[-] Error signing message with key from {}:\n\t{:?}", &path, e),
         Ok(k)  => {
