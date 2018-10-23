@@ -26,21 +26,15 @@ Intel SGX Ethereum Key Management CLI.
     Copyright: 2018 Oraclize.it
     Questions: greg@oraclize.it
 
-Usage:  ethkey_sgx generate                                  [--keyfile=<path>]
-        ethkey_sgx show public                               [--keyfile=<path>]
-        ethkey_sgx show secret                               [--keyfile=<path>]
-        ethkey_sgx show address                              [--keyfile=<path>] 
-        ethkey_sgx sign tx                                   [--keyfile=<path>] 
-        ethkey_sgx sign msg <message>                        [--keyfile=<path>] [-n | --noprefix]
-        ethkey_sgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
-        ethkey_sgx destroy                                   [--keyfile=<path>]
-        ethkey_sgx                                           [-h | --help]
-
-Options:
-    -h, --help          ❍ Show this usage message.
-    --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
-    -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
-                        a signed message. Messages signed with no prefix are NOT ECRecoverable!
+Usage:  ethkey_sgx                                              [-h | --help]
+        ethkey_sgx generate                                     [--keyfile=<path>]
+        ethkey_sgx show public                                  [--keyfile=<path>]
+        ethkey_sgx show secret                                  [--keyfile=<path>]
+        ethkey_sgx show address                                 [--keyfile=<path>] 
+        ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
+        ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
+        ethkey_sgx destroy                                      [--keyfile=<path>]
+        ethkey_sgx sign tx [--value=<Wei>] [--gaslimit=<uint>] [--keyfile=<path>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>]
 
 Commands:
     generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
@@ -55,6 +49,26 @@ Commands:
    verify               ❍ Verify a given address signed a given message with a given signature. 
    destroy              ❍ Destroys a given key file's monotonic counters, rendering the keyfile
                         unusable, before erasing the encrypted keyfile itself. Use with caution!
+
+Options:
+    -h, --help          ❍ Show this usage message.
+
+    --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+
+    --value=<Wei>       ❍ Amount of ether to send with transaction in Wei [default: 0]
+
+    --gaslimit=<uint>   ❍ Amount of gas to send with transaction [default: 210000]
+
+    --gasprice=<Wei>    ❍ Gas price for transaction in Wei [default: 20000000000]
+
+    --nonce=<uint>      ❍ Nonce of transaction in Wei [default: 0]
+
+    --data=<string>     ❍ Additional data to send with transaction [default:  ]
+
+    --value=<Wei>       ❍ Amount of ether to send with transaction in Wei [default: 0]
+
+    -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
+                        a signed message. Messages signed with no prefix are NOT ECRecoverable!
 ";
 
 #[derive(Debug, Deserialize)]
@@ -63,12 +77,17 @@ struct Args {
     cmd_msg: bool,
     cmd_sign: bool,
     cmd_show: bool,
+    flag_value: u64,
+    flag_nonce: u64,
     cmd_public: bool,
     cmd_secret: bool,
     cmd_verify: bool,
     cmd_address: bool,
     cmd_destroy: bool,
+    flag_data: String,
     cmd_generate: bool,
+    flag_gasprice: u64,
+    flag_gaslimit: u64,
     flag_noprefix: bool,
     arg_message: String,
     arg_address: String,
