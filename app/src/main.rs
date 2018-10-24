@@ -36,7 +36,8 @@ Usage:  ethkey_sgx                                              [-h | --help]
         ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx destroy                                      [--keyfile=<path>]
-        ethkey_sgx sign tx [--to=<address>] [--value=<Wei>] [--gaslimit=<uint>] [--keyfile=<path>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
+        ethkey_sgx sign tx [--to=<address>]   [--value=<Wei>]   [--gaslimit=<uint>]  [--keyfile=<path>]
+                           [--gasprice=<Wei>] [--nonce=<uint>]  [--data=<string>]    [--chainid=<uint>]
 
 Commands:
     generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
@@ -106,7 +107,6 @@ struct Args {
  * NOTE: Initial version of MC will be MRSIGNER not MRENCLAVE.
  * TODO: Use SGX time to log the last time key file was accessed. (This & above need bigger key struc!)
  * TODO: Store address in hex in keyfile!
- * TODO: Show full ethereum address!
  * TODO: Add option to verify via the hash too?
  * TODO: Use MRENCLAVE to tie a sealed thingy to this specific enclave!
  * TODO: Have a method to view the values of the mcs (should still increment the accesses obvs!)
@@ -229,7 +229,7 @@ fn show_pub(path: String) -> () {
 
 fn show_addr(path: String) -> () {
     match get_eth_address::run(&path) {
-        Ok(a)  => println!("[+] Ethereum Address: {}", a),
+        Ok(a)  => println!("[+] Ethereum Address: {:#x}", a),
         Err(e) => println!("[-] Error retreiving Ethereum Address from: {}:\n\t{:?}", &path, e)
     }
 }

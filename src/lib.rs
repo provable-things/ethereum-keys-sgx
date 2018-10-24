@@ -23,3 +23,10 @@ pub mod get_eth_address;
 pub mod show_private_key;
 pub mod sign_transaction;
 pub mod generate_keypair;
+
+/*
+ * TODO: A wrapper type that means I can wrap single-arity function and now it'll take another
+ * thing and return the original return of the function plus whatever I sent to pass through it
+ * unscathed. Use it in monadic chains to make multiple-parameter requiring stuff easier. Kinda
+ * like the reader monad I guess? Or a state monad without updates?
+ * */
