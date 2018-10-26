@@ -1,14 +1,18 @@
 extern crate serde;
 extern crate docopt;
-#[macro_use]
-extern crate serde_derive;
+extern crate itertools;
 extern crate ethereum_types;
 extern crate ethkey_sgx_app;
 
+#[macro_use]
+extern crate serde_derive;
+
 use docopt::Docopt;
+use itertools::Itertools;
 use self::sign_transaction::Transaction;
 use ethereum_types::{Address, U256, H160};
-use self::utils::{keyfile_exists, print_hex, get_affirmation};
+
+use self::utils::{keyfile_exists, get_affirmation};
 use ethkey_sgx_app::{
     show_private_key,
     sign_transaction,
@@ -36,8 +40,7 @@ Usage:  ethkey_sgx                                              [-h | --help]
         ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx destroy                                      [--keyfile=<path>]
-        ethkey_sgx sign tx [--to=<address>]   [--value=<Wei>]   [--gaslimit=<uint>]  [--keyfile=<path>]
-                           [--gasprice=<Wei>] [--nonce=<uint>]  [--data=<string>]    [--chainid=<uint>]
+        ethkey_sgx sign tx     [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
 
 Commands:
     generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
@@ -90,7 +93,7 @@ struct Args {
     cmd_public: bool,
     cmd_secret: bool,
     cmd_verify: bool,
-    flag_chainid: u64,
+    flag_chainid: u8,
     cmd_address: bool,
     cmd_destroy: bool,
     flag_data: String,
@@ -141,14 +144,15 @@ fn match_show(args: Args) -> () {
 fn match_sign(args: Args) -> () {
     match args {
         Args {cmd_msg: true, ..} => sign_msg(args.flag_keyfile, args.arg_message, args.flag_noprefix),
-        Args {cmd_tx: true, ..}  => sign_tx(args.flag_keyfile, args.flag_chainid, Transaction{
-            nonce: U256::from(args.flag_nonce), 
-            value: U256::from(args.flag_value), 
-            data: args.flag_data.as_bytes().to_vec(),
-            gas_limit: U256::from(args.flag_gaslimit), 
-            gas_price: U256::from(args.flag_gasprice),
-            to: if args.flag_to.len() == 0 {H160::zero()} else {args.flag_to.parse().expect("Invalid ethereum address!")}
-        }),
+        Args {cmd_tx: true, ..}  => sign_tx(args.flag_keyfile, Transaction::new(
+            args.flag_chainid,
+            args.flag_data.into(),
+            U256::from(args.flag_nonce),
+            U256::from(args.flag_value), 
+            U256::from(args.flag_gaslimit), 
+            U256::from(args.flag_gasprice),
+            if args.flag_to.len() == 0 {H160::zero()} else {args.flag_to.parse().expect("Invalid ethereum address!")},
+        )),
         _ => println!("{}", USAGE)
     }
 }
@@ -201,9 +205,9 @@ fn create_keypair(path: &String) -> (){
     };
 }
 
-fn sign_tx(path: String, chain_id: u64, tx: Transaction) -> () {
-    match sign_transaction::run(path, chain_id, tx) {
-        Ok(sig) => {println!("[+] Transaction signature: ");print_hex(sig.to_vec())}
+fn sign_tx(path: String, tx: Transaction) -> () {
+    match sign_transaction::run(path, tx) {
+        Ok(sig) => println!("[+] Raw transaction signature: 0x{:02x}", sig.as_raw().iter().format("")), // FIXME: Now returns an RlpStream, display in hex!
         Err(e)  => println!("[-] Error signing transaction:\n\t{:?}", e)
     }
 }
@@ -212,9 +216,9 @@ fn sign_msg(path: String, message: String, no_prefix: bool) -> () {
     match sign_message::run(&path, message, no_prefix) {
         Err(e) => println!("[-] Error signing message with key from {}:\n\t{:?}", &path, e),
         Ok(k)  => {
-            match no_prefix { // TODO: Print better
-                true  => {println!("[+] Message signature (no prefix): ");print_hex(k.to_vec())},
-                false => {println!("[+] Message signature (with prefix): ");print_hex(k.to_vec())}
+            match no_prefix { 
+                true  => println!("[+] Message signature (no prefix): 0x{:02x}", k.iter().format("")),
+                false => println!("[+] Message signature (with prefix): 0x{:02x}", k.iter().format(""))
             }
         }
     }

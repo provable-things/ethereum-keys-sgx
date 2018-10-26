@@ -14,4 +14,3 @@ sgx_types = { git = "https://github.com/baidu/rust-sgx-sdk" }
 eth-secp256k1 = { git = "https://github.com/paritytech/rust-secp256k1" }
 
 [target.'cfg(not(target_env = "sgx"))'.dependencies]
-# Can put sgx stuff here to stop conflicts maybe?

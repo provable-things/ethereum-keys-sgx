@@ -11,43 +11,75 @@ use sign_message::sign_hashed_message as sign_transaction;
 
 type Result<T> = result::Result<T, AppError>;
 
-#[derive(Default,Debug,Clone,PartialEq,Eq)] // FIXME: Sort to which are necessary!
 pub struct Transaction {
-    pub to: Address,
-    pub nonce: U256,
-    pub value: U256,
-    pub data: Vec<u8>,
-    pub gas_limit: U256,
-    pub gas_price: U256,
+    v: u64, 
+    r: U256,
+    s: U256,
+    to: Address,
+    nonce: U256,
+    value: U256,
+    chain_id: u8, 
+    data: Vec<u8>,
+    gas_limit: U256,
+    gas_price: U256,
 }
 
-pub fn run(path: String, chain_id: u64, tx: Transaction) -> Result<Signature> {
-    encode_signing_data(chain_id, tx)
-        .map(hash_signing_data)
-        .and_then(|(hash, _encoded_data)| get_signature(path, hash, _encoded_data))
-        .and_then(|(sig, _encoded_data)| Ok(sig)) // FIXME: HERE is where we will append the sig to the data!
+impl Transaction {
+    pub fn new(chain_id: u8, data: Vec<u8>, nonce: U256, value: U256, gas_limit: U256, gas_price: U256, to: Address) -> Transaction {
+        Transaction {
+            to: to,
+            data: data,
+            nonce: nonce,
+            value: value,
+            r: U256::zero(),
+            s: U256::zero(),
+            v: chain_id.into(), 
+            chain_id: chain_id, 
+            gas_limit: gas_limit,
+            gas_price: gas_price 
+        }
+    }
+
+    fn add_v_r_s_to_tx(mut self, sig: Signature) -> Self {
+        self.r = sig[0..32].into();
+        self.s = sig[32..64].into();
+        self.v = calculate_v(&sig[64], &self.chain_id);
+        self
+    }
 }
 
-fn get_signature(path: String, hash: Hash, data: RlpStream) -> Result<(Signature, RlpStream)> {
+pub fn run(path: String, tx: Transaction) -> Result<RlpStream> {
+    encode_tx_data(&tx)
+        .map(hash_encoded_data)
+        .and_then(|hash| get_signature(path, hash))
+        .map(|sig| tx.add_v_r_s_to_tx(sig))
+        .and_then(|tx| encode_tx_data(&tx))
+}
+
+fn get_signature(path: String, hash: Hash) -> Result<Signature> {
     read_encrypted_keyfile(&path)
-        .and_then(|keyfile| sign_transaction(keyfile, hash, init_enclave()?, &path))
-        .and_then(|sig| Ok((sig, data)))
+        .and_then(|keyfile| Ok(sign_transaction(keyfile, hash, init_enclave()?, &path)?)) // Pass sig next and just Ok it? Does that work first class? .map(Ok())
 }
 
-fn encode_signing_data(chain_id: u64, tx: Transaction) -> Result<RlpStream> {
+fn calculate_v(sig_v: &u8, chain_id: &u8) -> u64 {
+    ((chain_id * 2) + (*sig_v + 35)).into() // Per EIP155
+}
+
+fn encode_tx_data(tx: &Transaction) -> Result<RlpStream> {
     let mut stream = RlpStream::new();
+    stream.begin_list(9);
     stream.append(&tx.nonce);
     stream.append(&tx.gas_price);
     stream.append(&tx.gas_limit);
-    stream.append(&tx.value); // Something I saw has the value & to switched. TODO: Investigate!
     stream.append(&tx.to);
+    stream.append(&tx.value);
     stream.append(&tx.data);
-    stream.append(&chain_id);
-    stream.append(&0u8);
-    stream.append(&0u8);
+    stream.append(&tx.v); // Per EIP155 - replay attack protection
+    stream.append(&tx.r); 
+    stream.append(&tx.s); 
     Ok(stream)
 }
 
-fn hash_signing_data(data: RlpStream) -> (Hash, RlpStream) {
-    (data.as_raw().keccak256(), data)
+fn hash_encoded_data(data: RlpStream) -> Hash {
+    data.as_raw().keccak256()
 }
