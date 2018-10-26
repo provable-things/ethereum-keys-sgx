@@ -21,6 +21,7 @@ use ethkey_sgx_app::{
     get_eth_address, 
     get_public_key, 
     sign_message, 
+    get_nonce,
     verify,
     utils
 };
@@ -34,6 +35,7 @@ Intel SGX Ethereum Key Management CLI.
 
 Usage:  ethkey_sgx                                              [-h | --help]
         ethkey_sgx generate                                     [--keyfile=<path>]
+        ethkey_sgx show nonce                                   [--keyfile=<path>] 
         ethkey_sgx show public                                  [--keyfile=<path>]
         ethkey_sgx show secret                                  [--keyfile=<path>]
         ethkey_sgx show address                                 [--keyfile=<path>] 
@@ -89,6 +91,7 @@ struct Args {
     cmd_msg: bool,
     cmd_sign: bool,
     cmd_show: bool,
+    cmd_nonce: bool,
     flag_value: u64,
     flag_nonce: u64,
     flag_to: String,
@@ -139,6 +142,7 @@ fn match_show(args: Args) -> () {
         Args {cmd_public: true, ..}  => show_pub(args.flag_keyfile),
         Args {cmd_secret: true, ..}  => show_priv(args.flag_keyfile),
         Args {cmd_address: true, ..} => show_addr(args.flag_keyfile),
+        Args {cmd_nonce: true, ..}   => show_nonce(args.flag_keyfile),
         _ => println!("{}", USAGE)
     }
 }
@@ -236,6 +240,13 @@ fn show_pub(path: String) -> () {
 fn show_addr(path: String) -> () {
     match get_eth_address::run(&path) {
         Ok(a)  => println!("[+] Ethereum Address: {:#x}", a),
+        Err(e) => println!("[-] Error retreiving Ethereum Address from: {}:\n\t{:?}", &path, e)
+    }
+}
+
+fn show_nonce(path: String) -> () {
+    match get_nonce::run(&path) {
+        Ok(a)  => println!("[+] Ethereum Address: {:?}", a),
         Err(e) => println!("[-] Error retreiving Ethereum Address from: {}:\n\t{:?}", &path, e)
     }
 }

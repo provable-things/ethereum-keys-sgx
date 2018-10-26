@@ -1,11 +1,17 @@
 extern crate rlp;
 extern crate dirs;
+extern crate reqwest;
 extern crate sgx_urts;
 extern crate rustc_hex;
 extern crate secp256k1;
 extern crate sgx_types;
 extern crate tiny_keccak;
 extern crate ethereum_types;
+
+#[macro_use]
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 
 pub mod fs;
 pub mod types;
@@ -14,6 +20,7 @@ pub mod utils;
 pub mod keccak;
 pub mod verify;
 pub mod constants;
+pub mod get_nonce;
 pub mod enclave_api;
 pub mod sign_message;
 pub mod init_enclave;

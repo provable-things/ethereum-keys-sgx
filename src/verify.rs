@@ -3,7 +3,7 @@ use error::AppError;
 use rustc_hex::FromHex;
 use self::key::PublicKey;
 use ethereum_types::Address;
-use get_eth_address::{public_to_address};
+use utils::public_to_address;
 use keccak::{hash_slice, hash_with_prefix};
 use secp256k1::{key, Secp256k1, Message as SecpMessage, RecoverableSignature, RecoveryId};
 

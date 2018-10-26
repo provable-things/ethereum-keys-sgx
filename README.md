@@ -175,6 +175,8 @@ _**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkey_sgx`**_
 
 :black_square_button: Make a stand alone binary for D/L.
 
+:black_square_button: Make a nonce getter.
+
 :white_check_mark: Add a monotonic counter to the key accesses.
 
 :white_check_mark: Add a monotonic counter to tx signing events.
