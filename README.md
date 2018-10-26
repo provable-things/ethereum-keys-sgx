@@ -2,8 +2,10 @@
 
 ## __:black_nib: Notes:__
 
-More specifically, an Secp256k1 key pair generator & message signer where both the enclave _and_ the app are written in pure Rust. Made possible by the fantastic Rust SGX Software Developer Kit by Baidux Labs:
+More specifically, an Secp256k1 key-pair generator & message/transaction signer where both the enclave _and_ the app are written in pure Rust. Made possible by the fantastic Rust SGX Software Developer Kit by Baidux Labs:
 https://github.com/baidu/rust-sgx-sdk
+
+__Update #2:__ Now with full transaction-signing capabilities!
 
 __Update:__ Now with replay-attack protection!
 
@@ -18,20 +20,16 @@ __Update:__ Now with replay-attack protection!
         Copyright: 2018 Oraclize.it
         Questions: greg@oraclize.it
 
-    Usage:  ethkey_sgx generate                                  [--keyfile=<path>]
-            ethkey_sgx show public                               [--keyfile=<path>]
-            ethkey_sgx show secret                               [--keyfile=<path>]
-            ethkey_sgx show address                              [--keyfile=<path>] 
-            ethkey_sgx sign <message>                            [--keyfile=<path>] [-n | --noprefix]
-            ethkey_sgx verify <address> <message> <signature>    [--keyfile=<path>] [-n | --noprefix]
-            ethkey_sgx destroy                                   [--keyfile=<path>]
-            ethkey_sgx                                           [-h | --help]
-
-    Options:
-        -h, --help          ❍ Show this usage message.
-        --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
-        -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
-                            a signed message. Messages signed with no prefix are NOT ECRecoverable!
+    Usage:  ethkey_sgx                                              [-h | --help]
+            ethkey_sgx generate                                     [--keyfile=<path>]
+            ethkey_sgx show public                                  [--keyfile=<path>]
+            ethkey_sgx show secret                                  [--keyfile=<path>]
+            ethkey_sgx show address                                 [--keyfile=<path>] 
+            ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
+            ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
+            ethkey_sgx destroy                                      [--keyfile=<path>]
+            ethkey_sgx sign tx     [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>]
+                                [--chainid=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>]
 
     Commands:
         generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
@@ -39,12 +37,40 @@ __Update:__ Now with replay-attack protection!
                             current directory, or at the passed in path.
         show public         ❍ Log the public key from the given encrypted keypair to the console.
         show secret         ❍ Log the private key from the given encrypted keypair to the console.
-        sign                ❍ Signs a passed in message using key pair provided, otherwise uses
+        sign tx             ❍ Signs a transaction with the given parameters and returns the raw 
+                            data ready for broadcasting to the ethereum network. See below for the
+                            parameter defaults.
+        sign msg            ❍ Signs a passed in message using key pair provided, otherwise uses
                             default keypair if it exists. Defaults to using the ethereum message
                             prefix and ∴ signatures are ECRecoverable.
        verify               ❍ Verify a given address signed a given message with a given signature. 
        destroy              ❍ Destroys a given key file's monotonic counters, rendering the keyfile
-                            unusable, before erasing the encrypted keyfile. Use with caution!
+                            unusable, before erasing the encrypted keyfile itself. Use with caution!
+
+    Options:
+        -h, --help          ❍ Show this usage message.
+
+        --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+
+        --to=<Address>      ❍ Destination address of transaction [default: ]
+
+        --value=<Wei>       ❍ Amount of ether to send with transaction in Wei [default: 0]
+
+        --gaslimit=<uint>   ❍ Amount of gas to send with transaction [default: 210000]
+
+        --gasprice=<Wei>    ❍ Gas price for transaction in Wei [default: 20000000000]
+
+        --chainid=<uint>    ❍ ID of desired chain for transaction [default: 1]
+
+        --nonce=<uint>      ❍ Nonce of transaction in Wei [default: 0]
+
+        --data=<string>     ❍ Additional data to send with transaction [default:  ]
+
+        --value=<Wei>       ❍ Amount of ether to send with transaction in Wei [default: 0]
+
+        -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
+                            a signed message. Messages signed with no prefix are NOT ECRecoverable!
+
 ```
 &nbsp;
 
@@ -127,6 +153,10 @@ _**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkey_sgx`**_
 
 :black_square_button: Remotely attest!
 
+:black_square_button: Save key files as their corresponding address names!
+
+:black_square_button: Add more tests!
+
 :white_check_mark: Make ECRecoverable sigs.
 
 :black_square_button: Stream to the enc. to allow file encryption.
@@ -141,7 +171,7 @@ _**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkey_sgx`**_
 
 :white_check_mark: Separate the app from the SDK repo enclave to make it lean and mean.
 
-:black_square_button: Add transaction signing.
+:white_check_mark: Add transaction signing.
 
 :black_square_button: Make a stand alone binary for D/L.
 

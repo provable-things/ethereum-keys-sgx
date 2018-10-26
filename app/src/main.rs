@@ -48,7 +48,9 @@ Commands:
                         current directory, or at the passed in path.
     show public         ❍ Log the public key from the given encrypted keypair to the console.
     show secret         ❍ Log the private key from the given encrypted keypair to the console.
-    sign tx             ❍ Signs a transaction: WIP
+    sign tx             ❍ Signs a transaction with the given parameters and returns the raw 
+                        data ready for broadcasting to the ethereum network. See below for the
+                        parameter defaults.
     sign msg            ❍ Signs a passed in message using key pair provided, otherwise uses
                         default keypair if it exists. Defaults to using the ethereum message
                         prefix and ∴ signatures are ECRecoverable.
