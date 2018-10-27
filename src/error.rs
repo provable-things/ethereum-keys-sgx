@@ -1,9 +1,9 @@
 use hex;
+use reqwest;
 use secp256k1;
 use std::error::Error;
 use std::{io, fmt, num};
 use sgx_types::sgx_status_t;
-use reqwest;
 
 #[derive(Debug)]
 pub enum AppError {

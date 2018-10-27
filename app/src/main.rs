@@ -9,6 +9,7 @@ extern crate serde_derive;
 
 use docopt::Docopt;
 use itertools::Itertools;
+use self::utils::get_network_name;
 use self::sign_transaction::Transaction;
 use ethereum_types::{Address, U256, H160};
 
@@ -35,11 +36,11 @@ Intel SGX Ethereum Key Management CLI.
 
 Usage:  ethkey_sgx                                              [-h | --help]
         ethkey_sgx generate                                     [--keyfile=<path>]
-        ethkey_sgx show nonce                                   [--keyfile=<path>] 
         ethkey_sgx show public                                  [--keyfile=<path>]
         ethkey_sgx show secret                                  [--keyfile=<path>]
         ethkey_sgx show address                                 [--keyfile=<path>] 
         ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
+        ethkey_sgx show nonce                                   [--keyfile=<path>] [--chainid=<uint>] 
         ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx destroy                                      [--keyfile=<path>]
         ethkey_sgx sign tx     [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
@@ -48,8 +49,13 @@ Commands:
     generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
                         them & saves to disk as either ./encrypted_keypair.txt in the
                         current directory, or at the passed in path.
-    show public         ❍ Log the public key from the given encrypted keypair to the console.
     show secret         ❍ Log the private key from the given encrypted keypair to the console.
+    show nonce          ❍ Retrieves the current nonce of the keypair in a given keyfile, for
+                        the network specified via the chain ID parameter:
+                            1  = Ethereum Main-Net (default)
+                            3  = Ropsten Test-Net
+                            4  = Rinkeby Test-Net
+                            42 = Kovan Test-Net
     sign tx             ❍ Signs a transaction with the given parameters and returns the raw 
                         data ready for broadcasting to the ethereum network. See below for the
                         parameter defaults.
@@ -63,9 +69,9 @@ Commands:
 Options:
     -h, --help          ❍ Show this usage message.
 
-    --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+    --keyfile=<path>    ❍ Path to desired encrypted keyfile [default: ./encrypted_keypair]
 
-    --to=<Address>      ❍ Destination address of transaction [default: ]
+    --to=<address>      ❍ Destination address of transaction [default: ]
 
     --value=<Wei>       ❍ Amount of ether to send with transaction in Wei [default: 0]
 
@@ -142,7 +148,7 @@ fn match_show(args: Args) -> () {
         Args {cmd_public: true, ..}  => show_pub(args.flag_keyfile),
         Args {cmd_secret: true, ..}  => show_priv(args.flag_keyfile),
         Args {cmd_address: true, ..} => show_addr(args.flag_keyfile),
-        Args {cmd_nonce: true, ..}   => show_nonce(args.flag_keyfile),
+        Args {cmd_nonce: true, ..}   => show_nonce(args.flag_keyfile, args.flag_chainid),
         _ => println!("{}", USAGE)
     }
 }
@@ -167,7 +173,7 @@ fn generate(path: String) -> () {
     match keyfile_exists(&path) {
         false => create_keypair(&path),
         true  => {
-            println!("[!] WARNING! Something already exists at {} and will be overwritten.\n", &path); 
+            println!("[!] WARNING! Something already exists at {} and will be overwritten!", &path); 
             match get_affirmation("This cannot be undone!".to_string()) {
                 false => println!("[-] Affirmation not received, exiting."),
                 true  => create_keypair(&path)
@@ -180,7 +186,7 @@ fn destroy(path: String) -> () {
     match keyfile_exists(&path) {
         false => println!("[-] Cannot destroy key, no keyfile found at {}", &path),
         true  => {
-            println!("[!] WARNING! Key file at {} will be destroyed.\n", &path); 
+            println!("[!] WARNING! Key file at {} will be destroyed!", &path); 
             match get_affirmation("This cannot be undone!".to_string()) {
                 false => println!("[-] Affirmation not received, exiting."),
                 true  => match destroy_keypair::run(&path) {
@@ -213,7 +219,7 @@ fn create_keypair(path: &String) -> (){
 
 fn sign_tx(path: String, tx: Transaction) -> () {
     match sign_transaction::run(path, tx) {
-        Ok(sig) => println!("[+] Raw transaction signature: 0x{:02x}", sig.as_raw().iter().format("")), // FIXME: Now returns an RlpStream, display in hex!
+        Ok(sig) => println!("[+] Raw transaction signature: 0x{:02x}", sig.as_raw().iter().format("")), 
         Err(e)  => println!("[-] Error signing transaction:\n\t{:?}", e)
     }
 }
@@ -244,9 +250,9 @@ fn show_addr(path: String) -> () {
     }
 }
 
-fn show_nonce(path: String) -> () {
-    match get_nonce::run(&path) {
-        Ok(n)  => println!("[+] Address nonce: {}", n),
+fn show_nonce(path: String, network_id: u8) -> () {
+    match get_nonce::run(&path, network_id) {
+        Ok(n)  => println!("[+] Encrypted keyfile's last confirmed nonce on {network} is {nonce}", nonce = n, network = get_network_name(network_id)),
         Err(e) => println!("[-] Error retreiving Ethereum Address from: {}:\n\t{:?}", &path, e)
     }
 }
