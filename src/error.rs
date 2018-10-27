@@ -1,8 +1,7 @@
-use std::io;
-use std::fmt;
+use hex;
 use secp256k1;
-use rustc_hex;
 use std::error::Error;
+use std::{io, fmt, num};
 use sgx_types::sgx_status_t;
 use reqwest;
 
@@ -11,9 +10,10 @@ pub enum AppError {
     Io(io::Error),
     Custom(String),
     SGXError(sgx_status_t),
+    HexError(hex::FromHexError),
     ReqwestError(reqwest::Error),
     Secp256k1Error(secp256k1::Error),
-    HexError(rustc_hex::FromHexError)
+    ParseINTError(num::ParseIntError)
 }
 
 impl fmt::Display for AppError {
@@ -24,7 +24,8 @@ impl fmt::Display for AppError {
             AppError::SGXError(ref e) => format!("SGX error: {}", e),
             AppError::HexError(ref e) => format!("Hex error: {}", e),
             AppError::ReqwestError(ref e) => format!("Reqwest error: {}", e),
-            AppError::Secp256k1Error(ref e) => format!("Crypto error: {}", e)
+            AppError::Secp256k1Error(ref e) => format!("Crypto error: {}", e),
+            AppError::ParseINTError(ref e) => format!("ParseInt error: {}", e),
         };
         f.write_fmt(format_args!("{}", msg))
     }
@@ -39,6 +40,12 @@ impl Error for AppError {
 impl Into<String> for AppError {
     fn into(self) -> String {
         format!("{}", self)
+    }
+}
+
+impl From<num::ParseIntError> for AppError {
+    fn from(err: num::ParseIntError) -> AppError {
+        AppError::ParseINTError(err)
     }
 }
 
@@ -60,8 +67,8 @@ impl From<secp256k1::Error> for AppError {
     }
 }
 
-impl From<rustc_hex::FromHexError> for AppError {
-    fn from(e: rustc_hex::FromHexError) -> AppError {
+impl From<hex::FromHexError> for AppError {
+    fn from(e: hex::FromHexError) -> AppError {
         AppError::HexError(e)
     }
 }

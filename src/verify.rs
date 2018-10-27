@@ -1,6 +1,6 @@
 use std::result;
+use hex::FromHex;
 use error::AppError;
-use rustc_hex::FromHex;
 use self::key::PublicKey;
 use ethereum_types::Address;
 use utils::public_to_address;
@@ -18,7 +18,7 @@ pub fn run(address: &Address, message: String, signature: String, no_prefix: boo
 }
 
 fn recover_public_key(hashed_message: [u8;32], signature: String) -> Result<PublicKey> {
-    let bytes: Vec<u8> = signature.from_hex()?;
+    let bytes: Vec<u8> = FromHex::from_hex(signature)?; // FIXME: Can factor this out as a util!
     let rsig = RecoverableSignature::from_compact(&Secp256k1::new(), &bytes[0..64], RecoveryId::from_i32(bytes[64] as i32)?)?;
 	Ok(Secp256k1::new().recover(&SecpMessage::from_slice(&hashed_message[..])?, &rsig)?)
 }

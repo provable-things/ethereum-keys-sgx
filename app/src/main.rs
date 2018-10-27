@@ -246,7 +246,7 @@ fn show_addr(path: String) -> () {
 
 fn show_nonce(path: String) -> () {
     match get_nonce::run(&path) {
-        Ok(a)  => println!("[+] Ethereum Address: {:?}", a),
+        Ok(n)  => println!("[+] Address nonce: {}", n),
         Err(e) => println!("[-] Error retreiving Ethereum Address from: {}:\n\t{:?}", &path, e)
     }
 }

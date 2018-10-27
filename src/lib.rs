@@ -1,8 +1,8 @@
 extern crate rlp;
+extern crate hex;
 extern crate dirs;
 extern crate reqwest;
 extern crate sgx_urts;
-extern crate rustc_hex;
 extern crate secp256k1;
 extern crate sgx_types;
 extern crate tiny_keccak;
