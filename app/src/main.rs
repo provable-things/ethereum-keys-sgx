@@ -10,11 +10,11 @@ extern crate serde_derive;
 use docopt::Docopt;
 use itertools::Itertools;
 use self::utils::get_network_name;
-use self::sign_transaction::Transaction;
 use ethereum_types::{Address, U256, H160};
 
 use self::utils::{keyfile_exists, get_affirmation};
 use ethkey_sgx_app::{
+    transaction::Transaction,
     show_private_key,
     sign_transaction,
     generate_keypair, 

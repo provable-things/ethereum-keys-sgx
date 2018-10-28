@@ -22,6 +22,7 @@ pub mod verify;
 pub mod constants;
 pub mod get_nonce;
 pub mod enclave_api;
+pub mod transaction;
 pub mod sign_message;
 pub mod init_enclave;
 pub mod get_public_key;
@@ -30,7 +31,6 @@ pub mod get_eth_address;
 pub mod show_private_key;
 pub mod sign_transaction;
 pub mod generate_keypair;
-
 /*
  * TODO: A wrapper type that means I can wrap single-arity function and now it'll take another
  * thing and return the original return of the function plus whatever I sent to pass through it
