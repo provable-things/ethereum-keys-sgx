@@ -57,8 +57,10 @@ Commands:
                             4  = Rinkeby Test-Net
                             42 = Kovan Test-Net
     sign tx             ❍ Signs a transaction with the given parameters and returns the raw 
-                        data ready for broadcasting to the ethereum network. See below for the
-                        parameter defaults.
+                        data ready for broadcasting to the ethereum network. If no nonce is
+                        supplied, the tool will attempt to discover the nonce of the given
+                        keypair for the network the transaction is destined for. See below
+                        for the parameter defaults.
     sign msg            ❍ Signs a passed in message using key pair provided, otherwise uses
                         default keypair if it exists. Defaults to using the ethereum message
                         prefix and ∴ signatures are ECRecoverable.
@@ -81,7 +83,7 @@ Options:
 
     --chainid=<uint>    ❍ ID of desired chain for transaction [default: 1]
 
-    --nonce=<uint>      ❍ Nonce of transaction in Wei [default: 0]
+    --nonce=<uint>      ❍ Nonce of transaction in Wei [default:  -1]
 
     --data=<string>     ❍ Additional data to send with transaction [default:  ]
 
@@ -99,7 +101,7 @@ struct Args {
     cmd_show: bool,
     cmd_nonce: bool,
     flag_value: u64,
-    flag_nonce: u64,
+    flag_nonce: i64,
     flag_to: String,
     cmd_public: bool,
     cmd_secret: bool,
@@ -156,10 +158,10 @@ fn match_show(args: Args) -> () {
 fn match_sign(args: Args) -> () {
     match args {
         Args {cmd_msg: true, ..} => sign_msg(args.flag_keyfile, args.arg_message, args.flag_noprefix),
-        Args {cmd_tx: true, ..}  => sign_tx(args.flag_keyfile, Transaction::new(
+        Args {cmd_tx: true, ..}  => sign_tx(args.flag_keyfile, args.flag_nonce == -1, Transaction::new(
             args.flag_chainid,
             args.flag_data.into(),
-            U256::from(args.flag_nonce),
+            if args.flag_nonce != -1 {U256::from(args.flag_nonce)} else {U256::from(0)},
             U256::from(args.flag_value), 
             U256::from(args.flag_gaslimit), 
             U256::from(args.flag_gasprice),
@@ -217,8 +219,8 @@ fn create_keypair(path: &String) -> (){
     };
 }
 
-fn sign_tx(path: String, tx: Transaction) -> () {
-    match sign_transaction::run(path, tx) {
+fn sign_tx(path: String, query_nonce: bool, tx: Transaction) -> () {
+    match sign_transaction::run(path, query_nonce, tx) { // do something with the query nonce in "run"
         Ok(sig) => println!("[+] Raw transaction signature: 0x{:02x}", sig.as_raw().iter().format("")), 
         Err(e)  => println!("[-] Error signing transaction:\n\t{:?}", e)
     }

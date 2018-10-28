@@ -1,3 +1,4 @@
+use get_nonce;
 use std::result;
 use types::Hash;
 use rlp::RlpStream;
@@ -33,7 +34,7 @@ impl Transaction {
             value: value,
             r: U256::zero(),
             s: U256::zero(),
-            v: chain_id.into(), 
+            v: chain_id.into(), // Per EIP155 
             chain_id: chain_id, 
             gas_limit: gas_limit,
             gas_price: gas_price 
@@ -46,9 +47,23 @@ impl Transaction {
         self.v = calculate_v(&sig[64], &self.chain_id);
         self
     }
+
+    fn update_nonce(mut self, nonce: i64) -> Self {
+        self.nonce = U256::from(nonce);
+        self
+    }
 }
 
-pub fn run(path: String, tx: Transaction) -> Result<RlpStream> {
+pub fn run(path: String, query_nonce: bool, tx: Transaction) -> Result<RlpStream> {
+    match query_nonce {
+        false => encode_tx(path, tx),
+        true  => get_nonce::run(&path, tx.chain_id) // FIXME: Double logs the enclave init - should fix? Maybe pull the actual funcs we need?
+            .map(|n| tx.update_nonce(n))
+            .and_then(|tx| encode_tx(path, tx))
+    }
+}
+
+fn encode_tx(path: String, tx: Transaction) -> Result<RlpStream> {
     encode_tx_data(&tx)
         .map(hash_encoded_data)
         .and_then(|hash| get_signature(path, hash))
@@ -58,7 +73,7 @@ pub fn run(path: String, tx: Transaction) -> Result<RlpStream> {
 
 fn get_signature(path: String, hash: Hash) -> Result<Signature> {
     read_encrypted_keyfile(&path)
-        .and_then(|keyfile| Ok(sign_transaction(keyfile, hash, init_enclave()?, &path)?)) // Pass sig next and just Ok it? Does that work first class? .map(Ok())
+        .and_then(|keyfile| Ok(sign_transaction(keyfile, hash, init_enclave()?, &path)?)) 
 }
 
 fn calculate_v(sig_v: &u8, chain_id: &u8) -> u64 {
@@ -74,7 +89,7 @@ fn encode_tx_data(tx: &Transaction) -> Result<RlpStream> {
     stream.append(&tx.to);
     stream.append(&tx.value);
     stream.append(&tx.data);
-    stream.append(&tx.v); // Per EIP155 - replay attack protection
+    stream.append(&tx.v);
     stream.append(&tx.r); 
     stream.append(&tx.s); 
     Ok(stream)
