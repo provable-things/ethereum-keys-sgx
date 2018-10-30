@@ -1,6 +1,7 @@
 use types::Signature;
 use ethereum_types::{Address, U256};
 
+#[derive(Clone)]
 pub struct Transaction {
     pub v: u64, 
     pub r: U256,

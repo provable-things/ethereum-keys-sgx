@@ -16,8 +16,9 @@ use self::utils::{keyfile_exists, get_affirmation};
 use ethkey_sgx_app::{
     transaction::Transaction,
     show_private_key,
-    sign_transaction,
     generate_keypair, 
+    send_transaction,
+    sign_transaction,
     destroy_keypair,
     get_eth_address, 
     get_public_key, 
@@ -39,10 +40,11 @@ Usage:  ethkey_sgx                                              [-h | --help]
         ethkey_sgx show public                                  [--keyfile=<path>]
         ethkey_sgx show secret                                  [--keyfile=<path>]
         ethkey_sgx show address                                 [--keyfile=<path>] 
-        ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx show nonce                                   [--keyfile=<path>] [--chainid=<uint>] 
         ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx destroy                                      [--keyfile=<path>]
+        ethkey_sgx sendtx      [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
+        ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx sign tx     [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
 
 Commands:
@@ -61,6 +63,9 @@ Commands:
                         supplied, the tool will attempt to discover the nonce of the given
                         keypair for the network the transaction is destined for. See below
                         for the parameter defaults.
+    sendtx              ❍ Signs a transaction per the above instructions, then sends the 
+                        transaction to an Infura node for broadcasting to the chosen network.
+                        Returns the transactions hash if successful.
     sign msg            ❍ Signs a passed in message using key pair provided, otherwise uses
                         default keypair if it exists. Defaults to using the ethereum message
                         prefix and ∴ signatures are ECRecoverable.
@@ -106,6 +111,7 @@ struct Args {
     cmd_public: bool,
     cmd_secret: bool,
     cmd_verify: bool,
+    cmd_sendtx: bool,
     flag_chainid: u8,
     cmd_address: bool,
     cmd_destroy: bool,
@@ -121,10 +127,9 @@ struct Args {
 }
 /*
  * NOTE: Initial version of MC will be MRSIGNER not MRENCLAVE.
- * TODO: Use SGX time to log the last time key file was accessed. (This & above need bigger key struc!)
- * TODO: Store address in hex in keyfile!
- * TODO: Add option to verify via the hash too?
  * TODO: Use MRENCLAVE to tie a sealed thingy to this specific enclave!
+ * TODO: Add option to verify msg signatures via the hash too?
+ * TODO: Maybe break this file up a bit since it's getting unweildly. 
  * TODO: Have a method to view the values of the mcs (should still increment the accesses obvs!)
  * */
 fn main() {
@@ -140,6 +145,7 @@ fn execute(args: Args) -> () {
         Args {cmd_sign: true, ..}     => match_sign(args), 
         Args {cmd_destroy: true, ..}  => destroy(args.flag_keyfile),
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
+        Args {cmd_sendtx: true, ..}   => send_tx(args.flag_keyfile.clone(), args.flag_nonce == -1, get_transaction_struct(args)),
         Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().expect("Invalid ethereum address!"), args.arg_message, args.arg_signature, args.flag_noprefix),  
         _ => println!("{}", USAGE)
     }
@@ -155,20 +161,31 @@ fn match_show(args: Args) -> () {
     }
 }
 
+fn send_tx(path: String, query_nonce: bool, tx: Transaction) -> () {
+    match send_transaction::run(path, query_nonce, tx.chain_id.clone(), tx) {
+        Ok(hash) => println!("[+] Transaction hash: {}", hash),// 0x{:02x}", hash), 
+        Err(e)   => println!("[-] Error sending transaction:\n\t{:?}", e)
+    }
+}
+
 fn match_sign(args: Args) -> () {
     match args {
         Args {cmd_msg: true, ..} => sign_msg(args.flag_keyfile, args.arg_message, args.flag_noprefix),
-        Args {cmd_tx: true, ..}  => sign_tx(args.flag_keyfile, args.flag_nonce == -1, Transaction::new(
-            args.flag_chainid,
-            args.flag_data.into(),
-            if args.flag_nonce != -1 {U256::from(args.flag_nonce)} else {U256::from(0)},
-            U256::from(args.flag_value), 
-            U256::from(args.flag_gaslimit), 
-            U256::from(args.flag_gasprice),
-            if args.flag_to.len() == 0 {H160::zero()} else {args.flag_to.parse().expect("Invalid ethereum address!")},
-        )),
+        Args {cmd_tx: true, ..}  => sign_tx(args.flag_keyfile.clone(), args.flag_nonce == -1, get_transaction_struct(args)),
         _ => println!("{}", USAGE)
     }
+}
+
+fn get_transaction_struct(args: Args) -> Transaction {
+    Transaction::new(
+        args.flag_chainid,
+        args.flag_data.into(),
+        if args.flag_nonce != -1 {U256::from(args.flag_nonce)} else {U256::from(0)},
+        U256::from(args.flag_value), 
+        U256::from(args.flag_gaslimit), 
+        U256::from(args.flag_gasprice),
+        if args.flag_to.len() == 0 {H160::zero()} else {args.flag_to.parse().expect("Invalid ethereum address!")},
+    )
 }
 
 fn generate(path: String) -> () {
@@ -220,7 +237,7 @@ fn create_keypair(path: &String) -> (){
 }
 
 fn sign_tx(path: String, query_nonce: bool, tx: Transaction) -> () {
-    match sign_transaction::run(path, query_nonce, tx) { // do something with the query nonce in "run"
+    match sign_transaction::run(path, query_nonce, tx) { 
         Ok(sig) => println!("[+] Raw transaction signature: 0x{:02x}", sig.as_raw().iter().format("")), 
         Err(e)  => println!("[-] Error signing transaction:\n\t{:?}", e)
     }

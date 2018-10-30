@@ -4,6 +4,7 @@ extern crate dirs;
 extern crate reqwest;
 extern crate sgx_urts;
 extern crate secp256k1;
+extern crate itertools;
 extern crate sgx_types;
 extern crate tiny_keccak;
 extern crate ethereum_types;
@@ -30,6 +31,7 @@ pub mod destroy_keypair;
 pub mod get_eth_address;
 pub mod show_private_key;
 pub mod sign_transaction;
+pub mod send_transaction;
 pub mod generate_keypair;
 /*
  * TODO: A wrapper type that means I can wrap single-arity function and now it'll take another
