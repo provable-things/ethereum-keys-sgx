@@ -38,7 +38,7 @@ pub fn create_keypair() -> Result<KeyStruct> {
 
 pub fn verify_keypair(ks: KeyStruct) -> Result<KeyStruct> {
     match ks.public == get_public_key_from_secret(ks.secret) {
-        true => Ok(ks),
+        true  => Ok(ks),
         false => Err(EnclaveError::Custom("[-] Public key not derivable from secret in unencrypted keyfile!".to_string()))
     }
 }

@@ -8,30 +8,30 @@ enclave {
       /* define ECALLs here. */
       
         public sgx_status_t generate_keypair(
-            [out, size=sealed_log_size] uint8_t *sealed_log,
+            [user_check] uint8_t *sealed_log,
             uint32_t sealed_log_size
         );
 
         public sgx_status_t get_public_key(
-            [out, count=64] uint8_t *pub_key,
-            [in, out, size=sealed_log_size] uint8_t *sealed_log,
+            [user_check] uint8_t *pub_key,
+            [user_check] uint8_t *sealed_log,
             uint32_t sealed_log_size
         );
 
         public sgx_status_t show_private_key(
-            [in, out, size=sealed_log_size] uint8_t *sealed_log,
+            [user_check] uint8_t *sealed_log,
             uint32_t sealed_log_size
          );
       
         public sgx_status_t sign_message(
-            [in, out, size=sealed_log_size] uint8_t *sealed_log,
+            [user_check] uint8_t *sealed_log,
             uint32_t sealed_log_size,
-            [in, count=32] uint8_t *hashed_message_ptr,
-            [out, count=65] uint8_t *signature
+            [user_check] uint8_t *hashed_message_ptr,
+            [user_check] uint8_t *signature
         );
 
         public sgx_status_t destroy_key(
-            [in, size=sealed_log_size] uint8_t *sealed_log,
+            [user_check] uint8_t *sealed_log,
             uint32_t sealed_log_size
         );
     };
