@@ -51,25 +51,32 @@ Commands:
     generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
                         them & saves to disk as either ./encrypted_keypair.txt in the
                         current directory, or at the passed in path.
+
     show secret         ❍ Log the private key from the given encrypted keypair to the console.
+
     show nonce          ❍ Retrieves the current nonce of the keypair in a given keyfile, for
                         the network specified via the chain ID parameter:
                             1  = Ethereum Main-Net (default)
                             3  = Ropsten Test-Net
                             4  = Rinkeby Test-Net
                             42 = Kovan Test-Net
+
     sign tx             ❍ Signs a transaction with the given parameters and returns the raw 
                         data ready for broadcasting to the ethereum network. If no nonce is
                         supplied, the tool will attempt to discover the nonce of the given
                         keypair for the network the transaction is destined for. See below
                         for the parameter defaults.
+
     sendtx              ❍ Signs a transaction per the above instructions, then sends the 
                         transaction to an Infura node for broadcasting to the chosen network.
                         Returns the transactions hash if successful.
+
     sign msg            ❍ Signs a passed in message using key pair provided, otherwise uses
                         default keypair if it exists. Defaults to using the ethereum message
                         prefix and ∴ signatures are ECRecoverable.
+
    verify               ❍ Verify a given address signed a given message with a given signature. 
+
    destroy              ❍ Destroys a given key file's monotonic counters, rendering the keyfile
                         unusable, before erasing the encrypted keyfile itself. Use with caution!
 
@@ -91,8 +98,6 @@ Options:
     --nonce=<uint>      ❍ Nonce of transaction in Wei [default:  -1]
 
     --data=<string>     ❍ Additional data to send with transaction [default:  ]
-
-    --value=<Wei>       ❍ Amount of ether to send with transaction in Wei [default: 0]
 
     -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
                         a signed message. Messages signed with no prefix are NOT ECRecoverable!
@@ -128,6 +133,7 @@ struct Args {
 /*
  * NOTE: Initial version of MC will be MRSIGNER not MRENCLAVE.
  * TODO: Use MRENCLAVE to tie a sealed thingy to this specific enclave!
+ * TODO: Make it not in debug mode!
  * TODO: Add option to verify msg signatures via the hash too?
  * TODO: Maybe break this file up a bit since it's getting unweildly. 
  * TODO: Have a method to view the values of the mcs (should still increment the accesses obvs!)
@@ -146,7 +152,12 @@ fn execute(args: Args) -> () {
         Args {cmd_destroy: true, ..}  => destroy(args.flag_keyfile),
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
         Args {cmd_sendtx: true, ..}   => send_tx(args.flag_keyfile.clone(), args.flag_nonce == -1, get_transaction_struct(args)),
-        Args {cmd_verify: true, ..}   => verify(&args.arg_address.parse().expect("Invalid ethereum address!"), args.arg_message, args.arg_signature, args.flag_noprefix),  
+        Args {cmd_verify: true, ..}   => verify(
+            &args.arg_address.parse().expect("Invalid ethereum address!"), 
+            args.arg_message,
+            args.arg_signature, 
+            args.flag_noprefix
+        ),  
         _ => println!("{}", USAGE)
     }
 }
@@ -163,7 +174,7 @@ fn match_show(args: Args) -> () {
 
 fn send_tx(path: String, query_nonce: bool, tx: Transaction) -> () {
     match send_transaction::run(path, query_nonce, tx.chain_id.clone(), tx) {
-        Ok(hash) => println!("[+] Transaction hash: {}", hash),// 0x{:02x}", hash), 
+        Ok(hash) => println!("[+] Infura response: {}", hash),// 0x{:02x}", hash), 
         Err(e)   => println!("[-] Error sending transaction:\n\t{:?}", e)
     }
 }
