@@ -5,9 +5,11 @@
 More specifically, an Secp256k1 key-pair generator & message/transaction signer where both the enclave _and_ the app are written in pure Rust. Made possible by the fantastic Rust SGX Software Developer Kit by Baidux Labs:
 https://github.com/baidu/rust-sgx-sdk
 
+__Update #3:__ Now with full transaction sending capabilities!
+
 __Update #2:__ Now with full transaction-signing capabilities!
 
-__Update:__ Now with replay-attack protection!
+__Update #1:__ Now with replay-attack protection!
 
 &nbsp;
 
@@ -25,34 +27,56 @@ __Update:__ Now with replay-attack protection!
             ethkey_sgx show public                                  [--keyfile=<path>]
             ethkey_sgx show secret                                  [--keyfile=<path>]
             ethkey_sgx show address                                 [--keyfile=<path>] 
+            ethkey_sgx destroy                                      [--keyfile=<path>]
+            ethkey_sgx show nonce                                   [--keyfile=<path>] [--chainid=<uint>] 
             ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
             ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
-            ethkey_sgx destroy                                      [--keyfile=<path>]
+            ethkey_sgx sendtx      [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>]
+                                   [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
             ethkey_sgx sign tx     [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>]
-                                [--chainid=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>]
+                                   [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
 
     Commands:
+
         generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
                             them & saves to disk as either ./encrypted_keypair.txt in the
                             current directory, or at the passed in path.
-        show public         ❍ Log the public key from the given encrypted keypair to the console.
+
         show secret         ❍ Log the private key from the given encrypted keypair to the console.
+
+        show nonce          ❍ Retrieves the current nonce of the keypair in a given keyfile, for
+                            the network specified via the chain ID parameter:
+                                1  = Ethereum Main-Net (default)
+                                3  = Ropsten Test-Net
+                                4  = Rinkeby Test-Net
+                                42 = Kovan Test-Net
+
         sign tx             ❍ Signs a transaction with the given parameters and returns the raw 
-                            data ready for broadcasting to the ethereum network. See below for the
-                            parameter defaults.
+                            data ready for broadcasting to the ethereum network. If no nonce is
+                            supplied, the tool will attempt to discover the nonce of the given
+                            keypair for the network the transaction is destined for. See below
+                            for the parameter defaults.
+
+        sendtx              ❍ Signs a transaction per the above instructions, then sends the 
+                            transaction to an Infura node for broadcasting to the chosen network.
+                            Returns the transactions hash if successful.
+
         sign msg            ❍ Signs a passed in message using key pair provided, otherwise uses
                             default keypair if it exists. Defaults to using the ethereum message
                             prefix and ∴ signatures are ECRecoverable.
+
        verify               ❍ Verify a given address signed a given message with a given signature. 
+
        destroy              ❍ Destroys a given key file's monotonic counters, rendering the keyfile
                             unusable, before erasing the encrypted keyfile itself. Use with caution!
 
     Options:
+
         -h, --help          ❍ Show this usage message.
 
-        --keyfile=<path>    ❍ Path to desired encrypted keyfile. [default: ./encrypted_keypair]
+        --keyfile=<path>    ❍ Path to desired encrypted keyfile [default: ./encrypted_keypair]
 
-        --to=<Address>      ❍ Destination address of transaction [default: ]
+        --to=<address>      ❍ Destination address of transaction [default: ]
 
         --value=<Wei>       ❍ Amount of ether to send with transaction in Wei [default: 0]
 
@@ -62,15 +86,12 @@ __Update:__ Now with replay-attack protection!
 
         --chainid=<uint>    ❍ ID of desired chain for transaction [default: 1]
 
-        --nonce=<uint>      ❍ Nonce of transaction in Wei [default: 0]
+        --nonce=<uint>      ❍ Nonce of transaction in Wei [default:  -1]
 
         --data=<string>     ❍ Additional data to send with transaction [default:  ]
 
-        --value=<Wei>       ❍ Amount of ether to send with transaction in Wei [default: 0]
-
         -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
                             a signed message. Messages signed with no prefix are NOT ECRecoverable!
-
 ```
 &nbsp;
 
@@ -147,8 +168,6 @@ _**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkey_sgx`**_
 
 :white_check_mark: Refactor to lib crate.
 
-:white_check_mark: Test on real nuc in HW mode.
-
 :white_check_mark: Make CLI with Docopt.
 
 :black_square_button: Remotely attest!
@@ -174,6 +193,12 @@ _**`❍ sgx-nuc-docker@~/keygen# cd bin && ./ethkey_sgx`**_
 :white_check_mark: Add transaction signing.
 
 :black_square_button: Make a stand alone binary for D/L.
+
+:black_square_button: Make a getter for enclave measurement.
+
+:black_square_button: Remove `show public` since it's useless.
+
+:black_square_button: Remove ability to show private key for prod. usage.
 
 :black_square_button: Make a nonce getter.
 
