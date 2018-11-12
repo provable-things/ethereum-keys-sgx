@@ -36,6 +36,19 @@ pub fn create_keypair() -> Result<KeyStruct> {
     })
 }
 
+pub fn create_keypair_from_secret(secret: &[u8]) -> Result<KeyStruct> { // FIXME: factor out repetition of this and the above one!
+    let s = SecretKey::from_slice(&Secp256k1::new(), secret)?;
+    let p = get_public_key_from_secret(s);
+    Ok(KeyStruct{
+        secret: s, 
+        public: p, 
+        sgx_time: get_sgx_time()?, 
+        accesses_mc: create_mc()?,
+        signatures_mc: create_mc()?
+    })
+
+}
+
 pub fn verify_keypair(ks: KeyStruct) -> Result<KeyStruct> {
     match ks.public == get_public_key_from_secret(ks.secret) {
         true  => Ok(ks),

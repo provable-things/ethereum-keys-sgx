@@ -22,6 +22,7 @@ use ethkey_sgx_app::{
     destroy_keypair,
     get_eth_address, 
     get_public_key, 
+    import_secret,
     sign_message, 
     get_nonce,
     verify,
@@ -32,20 +33,23 @@ pub static DEFAULT_KEYPAIR_PATH: &'static str = "./encrypted_keypair.txt";
 
 static USAGE: &'static str = "
 Intel SGX Ethereum Key Management CLI.
+
     Copyright: 2018 Oraclize.it
     Questions: greg@oraclize.it
 
 Usage:  ethkey_sgx                                              [-h | --help]
+        ethkey_sgx import <secret>                              [--keyfile=<path>]
         ethkey_sgx generate                                     [--keyfile=<path>]
         ethkey_sgx show public                                  [--keyfile=<path>]
         ethkey_sgx show secret                                  [--keyfile=<path>]
         ethkey_sgx show address                                 [--keyfile=<path>] 
-        ethkey_sgx show nonce                                   [--keyfile=<path>] [--chainid=<uint>] 
-        ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
         ethkey_sgx destroy                                      [--keyfile=<path>]
-        ethkey_sgx sendtx      [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
+        ethkey_sgx show nonce                                   [--keyfile=<path>] [--chainid=<uint>] 
         ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
+        ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
+        ethkey_sgx sendtx      [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
         ethkey_sgx sign tx     [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
+
 
 Commands:
     generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
@@ -53,6 +57,9 @@ Commands:
                         current directory, or at the passed in path.
 
     show secret         ❍ Log the private key from the given encrypted keypair to the console.
+
+    import secret       ❍ Import a secret & encrypt via the enclave  & save it to a given path,
+                        or the default path: `./encrypted_keypair`)
 
     show nonce          ❍ Retrieves the current nonce of the keypair in a given keyfile, for
                         the network specified via the chain ID parameter:
@@ -114,6 +121,7 @@ struct Args {
     flag_nonce: i64,
     flag_to: String,
     cmd_public: bool,
+    cmd_import: bool,
     cmd_secret: bool,
     cmd_verify: bool,
     cmd_sendtx: bool,
@@ -124,6 +132,7 @@ struct Args {
     cmd_generate: bool,
     flag_gasprice: u64,
     flag_gaslimit: u64,
+    arg_secret: String,
     flag_noprefix: bool,
     arg_message: String,
     arg_address: String,
@@ -151,6 +160,7 @@ fn execute(args: Args) -> () {
         Args {cmd_sign: true, ..}     => match_sign(args), 
         Args {cmd_destroy: true, ..}  => destroy(args.flag_keyfile),
         Args {cmd_generate: true, ..} => generate(args.flag_keyfile),    
+        Args {cmd_import: true, ..}   => import(args.flag_keyfile, args.arg_secret), 
         Args {cmd_sendtx: true, ..}   => send_tx(args.flag_keyfile.clone(), args.flag_nonce == -1, get_transaction_struct(args)),
         Args {cmd_verify: true, ..}   => verify(
             &args.arg_address.parse().expect("Invalid ethereum address!"), 
@@ -159,6 +169,13 @@ fn execute(args: Args) -> () {
             args.flag_noprefix
         ),  
         _ => println!("{}", USAGE)
+    }
+}
+
+fn import(path: String, secret: String) -> () {
+    match import_secret::run(&path, secret) { 
+        Ok(_)  => println!("[+] Key pair successfully generated from secret & saved to {}!", path),
+        Err(e) => println!("[-] Error generating keypair from imported secret:\n\t{:?}", e)
     }
 }
 

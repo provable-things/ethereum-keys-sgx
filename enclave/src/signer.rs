@@ -44,5 +44,3 @@ fn write_msg_hash_outside_enclave(ks: KeyStruct, signed_msg: MessageSignature, s
 fn get_message_hash<'a>(ks: KeyStruct, hash_ptr: *mut u8) -> (KeyStruct, &'a [u8]) {
     (ks, unsafe {slice::from_raw_parts(hash_ptr, HASH_LENGTH)})
 }
-
-

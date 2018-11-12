@@ -68,7 +68,7 @@ endif
 
 CUSTOM_LIBRARY_PATH := ./lib
 CUSTOM_BIN_PATH := ./bin
-CUSTOM_EDL_PATH := ../../edl # Put relevate edls into local folder!
+CUSTOM_EDL_PATH := ../../edl # Put relevant edls into local folder!
 
 ######## EDL Settings ########
 

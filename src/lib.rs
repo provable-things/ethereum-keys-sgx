@@ -26,6 +26,7 @@ pub mod enclave_api;
 pub mod transaction;
 pub mod sign_message;
 pub mod init_enclave;
+pub mod import_secret;
 pub mod get_public_key;
 pub mod destroy_keypair;
 pub mod get_eth_address;

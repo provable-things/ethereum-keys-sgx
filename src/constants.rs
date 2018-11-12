@@ -1,4 +1,4 @@
-pub const SECRET_KEY_SIZE: usize = 32;
+pub const SECRET_KEY_SIZE_HEX: usize = 64;
 pub static HEX_PREFIX: &'static str = "0x"; 
 pub static URL_PREFIX: &'static str = "https://";
 pub static URL_SUFFIX: &'static str = ".infura.io/";

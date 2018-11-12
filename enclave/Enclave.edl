@@ -11,6 +11,13 @@ enclave {
             [user_check] uint8_t *sealed_log,
             uint32_t sealed_log_size
         );
+        
+        public sgx_status_t import_secret(
+            [user_check] uint8_t *sealed_log,
+            uint32_t sealed_log_size,
+            /*[user_check] uint8_t *secret_ptr*/
+            [user_check] uint8_t *secret_ptr
+        );
 
         public sgx_status_t get_public_key(
             [user_check] uint8_t *pub_key,
