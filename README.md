@@ -5,6 +5,8 @@
 More specifically, an Secp256k1 key-pair generator & message/transaction signer where both the enclave _and_ the app are written in pure Rust. Made possible by the fantastic Rust SGX Software Developer Kit by Baidux Labs:
 https://github.com/baidu/rust-sgx-sdk
 
+__Update #4:__ Now with a branch that can import private keys! (See the _**`import-secret`**_ branch...)
+
 __Update #3:__ Now with full transaction sending capabilities!
 
 __Update #2:__ Now with full transaction-signing capabilities!
@@ -19,20 +21,29 @@ __Update #1:__ Now with replay-attack protection!
 
 ```
     Intel SGX Ethereum Key Management CLI.
-        Copyright: 2018 Oraclize.it
         Questions: greg@oraclize.it
 
     Usage:  ethkey_sgx                                              [-h | --help]
+    
             ethkey_sgx generate                                     [--keyfile=<path>]
+
             ethkey_sgx show public                                  [--keyfile=<path>]
+
             ethkey_sgx show secret                                  [--keyfile=<path>]
+
             ethkey_sgx show address                                 [--keyfile=<path>] 
+
             ethkey_sgx destroy                                      [--keyfile=<path>]
+
             ethkey_sgx show nonce                                   [--keyfile=<path>] [--chainid=<uint>] 
+
             ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
+
             ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
+
             ethkey_sgx sendtx      [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>]
                                    [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
+                                   
             ethkey_sgx sign tx     [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>]
                                    [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
 
