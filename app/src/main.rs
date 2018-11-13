@@ -173,6 +173,19 @@ fn execute(args: Args) -> () {
 }
 
 fn import(path: String, secret: String) -> () {
+    match keyfile_exists(&path) { // FIXME: Look at removing the redundancy w/r/t keyfiles existing...
+        false => import_private_key(path, secret),
+        true  => {
+            println!("[!] WARNING! Something already exists at {} and will be overwritten!", &path); 
+            match get_affirmation("This cannot be undone!".to_string()) {
+                false => println!("[-] Affirmation not received, exiting."),
+                true  => import_private_key(path, secret)
+            }
+        }
+    }
+}
+
+fn import_private_key(path: String, secret: String) -> () {
     match import_secret::run(&path, secret) { 
         Ok(_)  => println!("[+] Key pair successfully generated from secret & saved to {}!", path),
         Err(e) => println!("[-] Error generating keypair from imported secret:\n\t{:?}", e)
