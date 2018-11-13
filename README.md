@@ -5,6 +5,8 @@
 More specifically, an Secp256k1 key-pair generator & message/transaction signer where both the enclave _and_ the app are written in pure Rust. Made possible by the fantastic Rust SGX Software Developer Kit by Baidux Labs:
 https://github.com/baidu/rust-sgx-sdk
 
+__Update #4:__ This fork can import private keys! (Master still cannot, for obvious reasons!)
+
 __Update #3:__ Now with full transaction sending capabilities!
 
 __Update #2:__ Now with full transaction-signing capabilities!
@@ -19,10 +21,12 @@ __Update #1:__ Now with replay-attack protection!
 
 ```
     Intel SGX Ethereum Key Management CLI.
+
         Copyright: 2018 Oraclize.it
         Questions: greg@oraclize.it
 
     Usage:  ethkey_sgx                                              [-h | --help]
+            ethkey_sgx import <secret>                              [--keyfile=<path>]
             ethkey_sgx generate                                     [--keyfile=<path>]
             ethkey_sgx show public                                  [--keyfile=<path>]
             ethkey_sgx show secret                                  [--keyfile=<path>]
@@ -31,18 +35,19 @@ __Update #1:__ Now with replay-attack protection!
             ethkey_sgx show nonce                                   [--keyfile=<path>] [--chainid=<uint>] 
             ethkey_sgx sign msg <message>                           [--keyfile=<path>] [-n | --noprefix]
             ethkey_sgx verify <address> <message> <signature>       [--keyfile=<path>] [-n | --noprefix]
-            ethkey_sgx sendtx      [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>]
-                                   [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
-            ethkey_sgx sign tx     [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>]
-                                   [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
+            ethkey_sgx sendtx      [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
+            ethkey_sgx sign tx     [--to=<address>] [--value=<Wei>] [--keyfile=<path>] [--gaslimit=<uint>] [--gasprice=<Wei>] [--nonce=<uint>] [--data=<string>] [--chainid=<uint>]
+
 
     Commands:
-
         generate            ❍ Generates an secp256k1 keypair inside an SGX enclave, encrypts
                             them & saves to disk as either ./encrypted_keypair.txt in the
                             current directory, or at the passed in path.
 
         show secret         ❍ Log the private key from the given encrypted keypair to the console.
+
+        import secret       ❍ Import a secret & encrypt via the enclave  & save it to a given path,
+                            or the default path: `./encrypted_keypair`)
 
         show nonce          ❍ Retrieves the current nonce of the keypair in a given keyfile, for
                             the network specified via the chain ID parameter:
@@ -71,7 +76,6 @@ __Update #1:__ Now with replay-attack protection!
                             unusable, before erasing the encrypted keyfile itself. Use with caution!
 
     Options:
-
         -h, --help          ❍ Show this usage message.
 
         --keyfile=<path>    ❍ Path to desired encrypted keyfile [default: ./encrypted_keypair]
@@ -91,7 +95,7 @@ __Update #1:__ Now with replay-attack protection!
         --data=<string>     ❍ Additional data to send with transaction [default:  ]
 
         -n, --noprefix      ❍ Does not add the ethereum message prefix when signing or verifying 
-                            a signed message. Messages signed with no prefix are NOT ECRecoverable!
+                            a signed message. Messages signed with no prefix are NOT ECRecoverable!   
 ```
 &nbsp;
 

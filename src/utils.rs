@@ -1,9 +1,12 @@
 use std::result;
+use hex::decode;
 use error::AppError;
 use std::path::Path;
 use keccak::Keccak256;
+use fs::write_keyfile;
 use self::key::PublicKey;
 use ethereum_types::Address;
+use types::EncryptedKeyStruct;
 use secp256k1::{Secp256k1, key};
 use std::io::{stdin, stdout, Write};
 use constants::{HEX_PREFIX, URL_PREFIX, URL_SUFFIX};
@@ -17,6 +20,10 @@ pub fn get_network_name(network_id: u8) -> String {
         42 => "kovan",
         _  => "mainnet"
     }.to_string()
+}
+
+pub fn save_keypair(data: EncryptedKeyStruct, path: &String) -> Result<()> {
+    Ok(write_keyfile(&path, &data)?)
 }
 
 pub fn get_infura_url(network_id: u8) -> String {
@@ -48,6 +55,18 @@ pub fn trim_hex_prefix(hex_string: String) -> Result<String> {
 pub fn trimmed_hex_to_i64(hex_no_prefix: String) -> Result<i64> {
     Ok(i64::from_str_radix(hex_no_prefix.as_str(), 16)?)
 }
+
+pub fn decode_string_from_hex(thing: String) -> Result<Vec<u8>> {
+    Ok(decode(&thing)?)
+}
+
+pub fn is_valid_length(thing: String, length: usize) -> Result<String> {
+    match thing.len() == length {
+        true => Ok(thing),
+        false => Err(AppError::Custom("Supplied string is invalid length!".to_string()))
+    }
+}
+
 fn serialize(public: PublicKey) -> Result<Vec<u8>> {
     Ok(public.serialize_vec(&Secp256k1::new(), false).to_vec())
 }

@@ -1,7 +1,7 @@
 use std::result;
 use sgx_types::*;
 use error::AppError;
-use fs::write_keyfile;
+use utils::save_keypair;
 use sgx_urts::SgxEnclave;
 use init_enclave::init_enclave;
 use enclave_api::generate_keypair;
@@ -15,15 +15,15 @@ pub fn run(path: &String) -> Result<()> {
         .and_then(|ks| save_keypair(ks, &path))
 }
 
-fn save_keypair(data: EncryptedKeyStruct, path: &String) -> Result<()> {
-    Ok(write_keyfile(&path, &data)?)
-}
-
 fn get_encrypted_keypair(enc: SgxEnclave) -> Result<EncryptedKeyStruct> {
     let mut encrypted_keys: EncryptedKeyStruct = vec![0u8; ENCRYPTED_KEYPAIR_SIZE];
-    let ptr: *mut u8 = &mut encrypted_keys[0];
     let result = unsafe {
-        generate_keypair(enc.geteid(), &mut sgx_status_t::SGX_SUCCESS, ptr, ENCRYPTED_KEYPAIR_SIZE as *const u32)
+        generate_keypair(
+            enc.geteid(), 
+            &mut sgx_status_t::SGX_SUCCESS, 
+            &mut encrypted_keys[0] as * mut u8,
+            ENCRYPTED_KEYPAIR_SIZE as *const u32 // FIXME: Do we even need this now we're doing [user_check] ?
+        )
     };
     enc.destroy();
     match result {
